@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AddTodo />
+    <AddTodo v-on:add-todo="addTodo" />
     <Todos v-bind:todos="todos" />
   </div>
 </template>
@@ -30,6 +30,11 @@ export default {
         },
       ],
     };
+  },
+  methods: {
+    addTodo(todo) {
+      this.todos = [...this.todos, todo];
+    },
   },
 };
 </script>
