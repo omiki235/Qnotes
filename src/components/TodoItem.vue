@@ -1,10 +1,19 @@
 <template>
-  <div></div>
+  <div class="container">
+    <div class="todo-item">
+      <p>
+        <input type="checkbox" />
+        {{ todo.title }}
+        <button class="del">x</button>
+      </p>
+    </div>
+  </div>
 </template>
 
 <script>
 export default {
   name: "TodoItem",
+  props: ["todo"],
 };
 </script>
 
