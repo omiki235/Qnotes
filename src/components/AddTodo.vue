@@ -4,11 +4,11 @@
       <br /><br />
       <h1 class="text-center">Todos Add</h1>
       <br /><br />
-      <form>
+      <form @submit="addTodo">
         <div class="form-group">
           <input
             type="text"
-            name="title"
+            v-model="title"
             placeholder="title"
             required
             class="form-control"
@@ -29,6 +29,19 @@ export default {
     return {
       title: "",
     };
+  },
+  methods: {
+    addTodo(e) {
+      e.preventDefault();
+
+      const newTodo = {
+        id: Date.now(),
+        title: this.title,
+        completed: false,
+      };
+      this.$emit("add-todo", newTodo);
+      this.title = "";
+    },
   },
 };
 </script>
