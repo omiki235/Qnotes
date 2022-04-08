@@ -1,7 +1,7 @@
 <template>
   <div>
     <AddTodo />
-    <Todos />
+    <Todos v-bind:todos="todos" />
   </div>
 </template>
 
@@ -14,6 +14,22 @@ export default {
   components: {
     AddTodo,
     Todos,
+  },
+  data() {
+    return {
+      todos: [
+        {
+          id: "1",
+          title: "Todo 1",
+          completed: false,
+        },
+        {
+          id: "2",
+          title: "Todo 2",
+          completed: false,
+        },
+      ],
+    };
   },
 };
 </script>

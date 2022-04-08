@@ -25,6 +25,11 @@
 <script>
 export default {
   name: "AddTodo",
+  data() {
+    return {
+      title: "",
+    };
+  },
 };
 </script>
 
