@@ -4,7 +4,7 @@
       <p>
         <input type="checkbox" />
         {{ todo.title }}
-        <button class="del">x</button>
+        <button @click="$emit('delete-todo', todo.id)" class="del">x</button>
       </p>
     </div>
   </div>

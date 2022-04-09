@@ -1,7 +1,7 @@
 <template>
   <div>
     <AddTodo v-on:add-todo="addTodo" />
-    <Todos v-bind:todos="todos" />
+    <Todos v-on:delete-todo="deleteTodo" v-bind:todos="todos" />
   </div>
 </template>
 
@@ -17,23 +17,15 @@ export default {
   },
   data() {
     return {
-      todos: [
-        {
-          id: "1",
-          title: "Todo 1",
-          completed: false,
-        },
-        {
-          id: "2",
-          title: "Todo 2",
-          completed: false,
-        },
-      ],
+      todos: [],
     };
   },
   methods: {
     addTodo(todo) {
       this.todos = [...this.todos, todo];
+    },
+    deleteTodo(id) {
+      this.todos = this.todos.filter((todo) => todo.id !== id);
     },
   },
 };
