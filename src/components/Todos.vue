@@ -2,6 +2,7 @@
   <div>
     <div v-bind:key="todo.id" v-for="todo in todos">
       <TodoItem
+        v-bind:todos="todos"
         v-on:delete-todo="$emit('delete-todo', todo.id)"
         v-bind:todo="todo"
       />
@@ -12,7 +13,7 @@
 <script>
 import TodoItem from "./TodoItem.vue";
 export default {
-  name: "ToDos",
+  name: "ToDds",
   props: ["todos"],
   components: { TodoItem },
 };
