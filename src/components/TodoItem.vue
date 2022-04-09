@@ -4,8 +4,25 @@
       <p>
         <input type="checkbox" />
         {{ todo.title }}
+        <button @click="update" class="update">編集</button>
         <button @click="$emit('delete-todo', todo.id)" class="del">x</button>
       </p>
+    </div>
+    <div v-if="this.flag">
+      <form @submit="updateTodo">
+        <div class="form-group">
+          <input
+            type="text"
+            v-model="updateTitle"
+            placeholder="title"
+            required
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+          <button class="btn btn-danger">Update</button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
@@ -13,7 +30,31 @@
 <script>
 export default {
   name: "TodoItem",
-  props: ["todo"],
+  props: ["todo", "todos"],
+  methods: {
+    markComplete() {
+      // this.toDo.completed = !this.todo.completed
+    },
+    update() {
+      this.flag = !this.flag;
+    },
+    updateTodo(e) {
+      e.preventDefault();
+
+      this.todos.filter((todo) => {
+        if (todo.id == this.todo.id) {
+          todo.title = this.updateTitle;
+        }
+      });
+      this.flag = false;
+    },
+  },
+  data() {
+    return {
+      flag: false,
+      updateTitle: "",
+    };
+  },
 };
 </script>
 
