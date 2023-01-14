@@ -1,23 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Post from "./Post";
 import TweetBox from "./TweetBox";
 import "./Timeline.css";
+import db from "../../firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 const Timeline = () => {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const postData = collection(db, "posts");
+    getDocs(postData).then((querySnapshot) => {
+      setPosts(querySnapshot.docs.map((doc) => doc.data()));
+    });
+  }, []);
+
+  console.log("mount");
   return (
     <div className="timeline">
       <div className="timeline--header">
         <h2>ホーム</h2>
       </div>
       <TweetBox />
-      <Post
-        displayName="プログラミング"
-        userName="omikey"
-        verified={true}
-        text="Test Text"
-        avatar="http://shincode.info/wp-content/uploads/2021/12/icon.png"
-        image="https://source.unsplash.com/random"
-      />
+      {posts.map((post) => (
+        <Post
+          key={post.text}
+          displayName={post.displayName}
+          userName={post.userName}
+          verified={post.verified}
+          text={post.text}
+          avatar={post.avatar}
+          image={post.image}
+        />
+      ))}
     </div>
   );
 };
