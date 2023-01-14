@@ -23,11 +23,12 @@ const Widgets = () => {
           screenName="omikey005"
           options={{ height: 400 }}
         />
-
-        <TwitterShareButton
-          url={"https://twitter.com/"}
-          options={{ text: "#React.js勉強中", via: "omikey005" }}
-        />
+        <div className="share--button">
+          <TwitterShareButton
+            url={"https://twitter.com/"}
+            options={{ text: "#React.js勉強中", via: "omikey005" }}
+          />
+        </div>
       </div>
     </div>
   );
