@@ -10,9 +10,14 @@ const Timeline = () => {
         <h2>ホーム</h2>
       </div>
       <TweetBox />
-      <Post />
-      <Post />
-      <Post />
+      <Post
+        displayName="プログラミング"
+        userName="omikey"
+        verified={true}
+        text="Test Text"
+        avatar="http://shincode.info/wp-content/uploads/2021/12/icon.png"
+        image="https://source.unsplash.com/random"
+      />
     </div>
   );
 };
