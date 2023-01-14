@@ -9,24 +9,24 @@ import {
 import { Avatar } from "@mui/material";
 import "./Post.css";
 
-const Post = () => {
+const Post = ({ displayName, userName, verified, text, avatar, image }) => {
   return (
     <div className="post">
       <div className="post--avatar">
-        <Avatar />
+        <Avatar src={avatar} />
       </div>
       <div className="post--body">
         <div className="post--header">
           <div className="post--headerText">
-            <h3>プログラミング</h3>
+            <h3>{displayName}</h3>
             <VerifiedUser className="post--badge" />
-            <span className="post--headerSpecial">@omikey005</span>
+            <span className="post--headerSpecial">@{userName}</span>
           </div>
           <div className="post--headerDescription">
-            <p>テストツイート</p>
+            <p>{text}</p>
           </div>
         </div>
-        <img src="https://source.unsplash.com/random" alt="" />
+        <img src={image} alt="img" />
         <div className="post--footer">
           <ChatBubbleOutline fontSize="small" />
           <Repeat fontSize="small" />
