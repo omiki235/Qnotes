@@ -36,6 +36,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+//画像お気に入り
 router.put('/:id/like', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
