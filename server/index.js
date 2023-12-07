@@ -16,23 +16,25 @@ const db = mysql.createConnection({
   port: 3306,
 });
 
-app.post('/user', (req, res) => {
+app.post('/users', (req, res) => {
   const username = req.body.username;
+  const password = req.body.password;
 
-  const query = 'INSERT INTO user (username, password) VALUES (?, ?)';
-  db.query(query, [username], (err, result) => {
+  const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+  db.query(query, [username, password], (err, result) => {
     if (err) {
       console.log(err);
       res.status(500).send({ error: 'Error inserting data into database' });
     } else {
+      console.log(result);
       res.status(200).json({ message: 'Value insrted' });
     }
   });
 });
 
-app.get('/user', (req, res) => {
-  const query = 'SELECT * FROM user';
-  db.query(query, (req, result) => {
+app.get('/users', (req, res) => {
+  const query = 'SELECT * FROM users';
+  db.query(query, (err, result) => {
     if (err) {
       console.log(err);
       res.status(500).send('Error retrieving data from database');
