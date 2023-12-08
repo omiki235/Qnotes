@@ -20,8 +20,8 @@ app.post('/users', (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
-  const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
-  db.query(query, [username, password], (err, result) => {
+  const userQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
+  db.query(userQuery, [username, password], (err, result) => {
     if (err) {
       console.log(err);
       res.status(500).send({ error: 'Error inserting data into database' });
@@ -33,8 +33,8 @@ app.post('/users', (req, res) => {
 });
 
 app.get('/users', (req, res) => {
-  const query = 'SELECT * FROM users';
-  db.query(query, (err, result) => {
+  const userQuery = 'SELECT * FROM users';
+  db.query(userQuery, (err, result) => {
     if (err) {
       console.log(err);
       res.status(500).send('Error retrieving data from database');
@@ -43,6 +43,8 @@ app.get('/users', (req, res) => {
     }
   });
 });
+
+app.post('/memos', (req, res) => {});
 
 app.listen(PORT, () => {
   console.log(`${PORT}番のサーバーが起動しました`);
