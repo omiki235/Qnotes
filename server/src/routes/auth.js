@@ -1,33 +1,67 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
+const { body, validationResult } = require('express-validator');
+const dbConfig = require('../config/db.config');
 
-router.post('/users', (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
+function validateRegistration() {
+  return [
+    body('username')
+      .isLength({ min: 5 })
+      .withMessage('ユーザー名は5文字以上必要です。'),
+    body('password')
+      .isLength({ min: 7 })
+      .withMessage('パスワードは7文字以上必要です。'),
+    body('confirmPassword')
+      .isLength({ min: 7 })
+      .withMessage('確認用パスワードは7文字以上必要です。')
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error('確認用パスワードが一致しません。');
+        }
+        return true;
+      }),
+    body('username').custom((value) => {
+      return new Promise((resolve, reject) => {
+        dbConfig.query(
+          'SELECT * FROM users WHERE username = ?',
+          [value],
+          (err, results) => {
+            if (err) {
+              reject(new Error('データベースエラー'));
+            }
+            if (results.length > 0) {
+              reject(new Error('このユーザーはすでに使用されています。'));
+            }
+            resolve(true);
+          }
+        );
+      });
+    }),
+  ];
+}
 
-  const userQuery = 'INSERT INTO users (username, password) VALUES (?, ?)';
-  db.query(userQuery, [username, password], (err, result) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send({ error: 'Error inserting data into database' });
-    } else {
-      console.log(result);
-      res.status(200).json({ message: 'Value insrted' });
+function registerUser(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  // データベースに新しいユーザーを挿入
+  const { username, password } = req.body;
+  dbConfig.query(
+    'INSERT INTO users (username, password) VALUES (?, ?)',
+    [username, password],
+    (err, results) => {
+      if (err) {
+        console.error('データベースエラー: ' + err.message);
+        return res.status(500).send('Internal Server Error');
+      }
+      return res
+        .status(201)
+        .json({ message: 'ユーザーが正常に登録されました。' });
     }
-  });
-});
+  );
+}
 
-router.get('/users', (req, res) => {
-  const userQuery = 'SELECT * FROM users';
-  db.query(userQuery, (err, result) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send('Error retrieving data from database');
-    } else {
-      res.status(200).json(result);
-    }
-  });
-});
-
-module.exports = router;
+module.exports = {
+  validateRegistration,
+  registerUser,
+};

@@ -1,15 +1,18 @@
 const express = require('express');
-const app = express();
-const mysql = require('mysql2');
 const cors = require('cors');
-const memosRoutes = require('./src/routes/memos');
+const app = express();
 const dbConfig = require('./src/config/db.config');
+const auth = require('./src/routes/auth');
+
 const PORT = 8000;
 
 app.use(cors());
 app.use(express.json());
 
 app.use('/api', require('./src/routes'));
+
+// ユーザー新規登録
+app.post('/register', auth.validateRegistration(), auth.registerUser);
 
 app.listen(PORT, () => {
   console.log(`${PORT}番のサーバーが起動しました`);
