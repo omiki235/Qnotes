@@ -48,6 +48,10 @@ exports.getOne = async (req, res) => {
   const { memoId } = req.params;
 
   try {
+    // ユーザーが認証されているか
+    if (!req.user || !req.user._id) {
+      return res.status(401).json('ユーザーが認証されていません');
+    }
     const [rows] = await pool.execute(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
       [req.user._id, memoId]
