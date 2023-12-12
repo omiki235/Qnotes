@@ -49,7 +49,7 @@ function registerUser(req, res) {
   dbConfig.query(
     'INSERT INTO users (username, password) VALUES (?, ?)',
     [username, password],
-    (err, results) => {
+    (err) => {
       if (err) {
         console.error('データベースエラー: ' + err.message);
         return res.status(500).send('Internal Server Error');
