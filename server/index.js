@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const dbConfig = require('./src/config/db.config');
-const auth = require('./src/routes/auth');
+const register = require('./src/routes/register');
 
 const PORT = 8000;
 
@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/api', require('./src/routes'));
 
 // ユーザー新規登録
-app.post('/register', auth.validateRegistration(), auth.registerUser);
+app.post('/register', register.validateRegistration(), register.registerUser);
 
 app.listen(PORT, () => {
   console.log(`${PORT}番のサーバーが起動しました`);
