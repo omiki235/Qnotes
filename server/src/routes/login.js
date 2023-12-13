@@ -14,7 +14,7 @@ router.post(
       .isLength({ min: 7 })
       .withMessage('パスワードは7文字以上必要です'),
   ],
-  (req, res) => {
+  async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -22,23 +22,53 @@ router.post(
 
     const { username, password } = req.body;
 
-    // MySQLデータベースにクエリを実行してユーザーを検証するロジックをここに追加します
-    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
-    dbConfig.query(query, [username, password], (err, results) => {
-      if (err) {
-        console.error('MySQL error:', err);
-        return res.status(500).json({ error: 'Internal Server Error' });
-      }
+    try {
+      const user = await getUserFromDatabase(username);
 
-      if (results.length > 0) {
-        // ログイン成功
-        return res.status(200).json({ message: 'ログイン成功' });
+      if (user && user.passwordHash) {
+        // user.passwordHash が存在するか確認
+        try {
+          // パスワードの比較
+          const passwordMatch = bcrypt.compareSync(password, user.passwordHash);
+
+          if (passwordMatch) {
+            // ログイン成功
+            return res.status(200).json({ message: 'ログイン成功' });
+          } else {
+            // ログイン失敗
+            return res
+              .status(401)
+              .json({ error: 'ログインできませんでした。' });
+          }
+        } catch (bcryptError) {
+          console.error('bcryptエラー:', bcryptError);
+          return res.status(500).json({ error: 'Internal Server Error' });
+        }
       } else {
-        // ログイン失敗
-        return res.status(401).json({ error: '認証失敗' });
+        // ユーザーまたはパスワードハッシュが見つからない場合
+        return res
+          .status(401)
+          .json({ error: 'パスワードハッシュが見つかりませんでした。' });
       }
-    });
+    } catch (err) {
+      console.error('Error during login:', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 );
+
+// データベースからユーザー情報を取得する関数
+function getUserFromDatabase(username) {
+  return new Promise((resolve, reject) => {
+    const query = 'SELECT * FROM users WHERE username = ?';
+    dbConfig.query(query, [username], (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results[0]);
+      }
+    });
+  });
+}
 
 module.exports = router;
