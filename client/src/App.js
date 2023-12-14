@@ -1,6 +1,8 @@
 import './App.css';
-import { CssBaseline, createTheme } from '@mui/material';
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
+import Memo from './pages/Memo';
 import AppLayout from './components/layout/AppLayout';
 
 function App() {
@@ -8,11 +10,17 @@ function App() {
     palette: { mode: 'light' },
   });
   return (
-    <div theme={theme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppLayout />
-      <Home />
-    </div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<Home />} />
+            <Route path="memo" element={<Memo />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

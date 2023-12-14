@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Box } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
   return (
     <Box
       sx={{
@@ -13,9 +12,7 @@ export default function Home() {
         justifyContent: 'center',
       }}
     >
-      <LoadingButton variant="outlined" loading={loading}>
-        新規メモ作成
-      </LoadingButton>
+      <LoadingButton variant="outlined">新規メモ作成</LoadingButton>
     </Box>
   );
 }

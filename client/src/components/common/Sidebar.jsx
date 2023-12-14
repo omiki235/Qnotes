@@ -36,7 +36,6 @@ export default function Sidebar() {
             }}
           >
             <Typography variant="body2" fontWeight="700">
-              {/* {user.username} */}
               testUser
             </Typography>
             <IconButton>
@@ -73,21 +72,17 @@ export default function Sidebar() {
             <Typography variant="body2" fontWeight="700">
               プライベート
             </Typography>
-            <IconButton
-            // onClick={addMemo}
-            >
+            <IconButton>
               <AddBoxIcon />
             </IconButton>
           </Box>
         </ListItemButton>
 
-        <ListItemButton
-          sx={{ pl: '20px' }}
-          // component={Link}
-
-          // selected={index === activeIndex}
-        >
-          <Typography></Typography>
+        <ListItemButton sx={{ pl: '20px' }}>
+          <Typography>
+            <p>📓</p>
+            <p>空のページ</p>
+          </Typography>
         </ListItemButton>
       </List>
     </Drawer>
