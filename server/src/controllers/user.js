@@ -1,4 +1,4 @@
-const pool = require('../config/database');
+const pool = require('../config/db.config');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -13,7 +13,7 @@ module.exports = {
         [username]
       );
 
-      if (existingUser.legth > 0) {
+      if (existingUser.length > 0) {
         return res
           .status(400)
           .json({ error: 'このユーザーは既に使用されています。' });
