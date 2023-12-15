@@ -1,16 +1,6 @@
 const mysql = require('mysql2/promise');
 const dbConfig = require('../config/db.config');
 
-const pool = mysql.createPool({
-  user: 'root',
-  host: 'localhost',
-  password: 'passw0rd',
-  database: 'nortion_data',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
-
 exports.create = async (req, res) => {
   try {
     // MySQLデータベースに接続

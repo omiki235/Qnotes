@@ -19,8 +19,8 @@ router.post(
   body('confirmPassword')
     .isLength({ min: 7 })
     .withMessage('確認用パスワードは7文字以上必要です。'),
-  body('username').custom((value) => {
-    const [existingUser] = pool.execute(
+  body('username').custom(async (value) => {
+    const [existingUser] = await pool.execute(
       'SELECT * FROM users WHERE username = ?',
       [value]
     );

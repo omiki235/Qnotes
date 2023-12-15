@@ -5,8 +5,10 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'passw0rd',
   database: process.env.DB_NAME || 'nortion_data',
-  connectionLimit: 10,
   port: 3306,
+  connectionLimit: 10,
+  waitForConnections: true,
+  queueLimit: 0,
 });
 
 pool

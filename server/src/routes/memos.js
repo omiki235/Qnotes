@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const memosController = require('../controllers/memos');
+const memosController = require('../controllers/memo');
 
 router.post('/', memosController.create);
 
