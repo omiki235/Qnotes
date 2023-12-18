@@ -12,22 +12,28 @@ router.post(
   '/register',
   body('username')
     .isLength({ min: 5 })
-    .withMessage('ユーザー名は5文字以上必要です。'),
+    .withMessage('ユーザー名は5文字以上必要です。')
+    .custom(async (value) => {
+      const [existingUser] = await pool.execute(
+        'SELECT * FROM users WHERE username = ?',
+        [value]
+      );
+      if (existingUser.length > 0) {
+        return Promise.reject('このユーザーはすでに使用されています。');
+      }
+    }),
   body('password')
     .isLength({ min: 7 })
-    .withMessage('パスワードは7文字以上必要です。'),
+    .withMessage('パスワードは7文字以上必要です.'),
   body('confirmPassword')
     .isLength({ min: 7 })
-    .withMessage('確認用パスワードは7文字以上必要です。'),
-  body('username').custom(async (value) => {
-    const [existingUser] = await pool.execute(
-      'SELECT * FROM users WHERE username = ?',
-      [value]
-    );
-    if (existingUser.length > 0) {
-      return Promise.reject('このユーザーはすでに使用されています。');
-    }
-  }),
+    .withMessage('確認用パスワードは7文字以上必要です.')
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error('確認用パスワードが一致しません。');
+      }
+      return true;
+    }),
   validation.validate,
   userController.register
 );
