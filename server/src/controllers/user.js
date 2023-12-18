@@ -23,7 +23,7 @@ module.exports = {
         'INSERT INTO users (username, password) VALUES (?, ?)',
         [username, hashedPassword]
       );
-      res.status(500).json({ message: 'ユーザーが正常に作成されました。' });
+      res.status(200).json({ message: 'ユーザーが正常に作成されました。' });
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -54,7 +54,7 @@ module.exports = {
         { expiresIn: '1h' }
       );
 
-      res.status(200).json({ token });
+      res.status(200).json({ token, message: 'ログインに成功しました' });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'Internal Server Error' });

@@ -42,7 +42,7 @@ router.post(
     .isLength({ min: 7 })
     .withMessage('パスワードは7文字以上必要です'),
   validation.validate,
-  userController.register
+  userController.login
 );
 
 // JWT API認証
