@@ -79,10 +79,7 @@ export default function Sidebar() {
         </ListItemButton>
 
         <ListItemButton sx={{ pl: '20px' }}>
-          <Typography>
-            <p>📓</p>
-            <p>空のページ</p>
-          </Typography>
+          <Typography></Typography>
         </ListItemButton>
       </List>
     </Drawer>

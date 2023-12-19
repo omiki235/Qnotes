@@ -1,10 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/system';
 import { IconButton, TextField } from '@mui/material';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import memoApi from '../api/memoApi';
 
 export default function Memo() {
+  const { memoId } = useParams();
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const memos = useSelector((state) => state.memo.value);
+
+  useEffect(() => {
+    const getMemo = async () => {
+      try {
+        const res = await memoApi.getOne(memoId);
+        setTitle(res.title);
+        setDescription(res.description);
+      } catch (err) {
+        alert(err);
+      }
+    };
+    getMemo();
+  }, [memoId]);
+
   return (
     <>
       <Box
@@ -21,6 +44,7 @@ export default function Memo() {
           <DeleteOutlinedIcon />
         </IconButton>
       </Box>
+
       <Box sx={{ padding: '10px 50px' }}>
         <Box>
           <TextField

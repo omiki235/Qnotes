@@ -23,7 +23,8 @@ function App() {
           </Route>
           <Route path="/" element={<AppLayout />}>
             <Route index element={<Home />} />
-            <Route path="memo" element={<Memo />} />
+            <Route path="memo" element={<Home />} />
+            <Route path="memo/:memoId" element={<Memo />} />
           </Route>
         </Routes>
       </BrowserRouter>
