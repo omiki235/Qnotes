@@ -1,36 +1,34 @@
-const mysql = require('mysql2/promise');
-const dbConfig = require('../config/db.config');
+const connection = require('../config/db_memo_config');
 
 exports.create = async (req, res) => {
   try {
-    // MySQLデータベースに接続
-    const connection = await mysql.createConnection(dbConfig);
+    // 新しいメモの位置を指定するために、既存のメモの数を取得
+    const [results] = await connection
+      .promise()
+      .query('SELECT COUNT(*) as memoCount FROM memos');
+    const memoCount = results[0].memoCount;
 
-    // 既存のメモの数を取得
-    const [rows] = await connection.execute(
-      'SELECT COUNT(*) as count FROM memos'
-    );
-    const memoCount = rows[0].count;
+    // 新しいメモをデータベースに挿入
+    const [insertResult] = await connection
+      .promise()
+      .query('INSERT INTO memos (user, position) VALUES (?, ?)', [
+        req.user._id, // ユーザーのIDを使用する（必要に応じて変更）
+        memoCount, // 新しいメモの位置は memoCount に設定
+      ]);
 
-    // 新しいメモを作成
-    const [result] = await connection.execute(
-      'INSERT INTO memos (user_id, position) VALUES (?, ?)',
-      [req.user._id, memoCount > 0 ? memoCount : 0]
-    );
+    const insertedMemoId = insertResult.insertId;
 
-    // データベース接続を閉じます
-    connection.end();
+    // 挿入されたメモをデータベースから取得
+    const [memoResult] = await connection
+      .promise()
+      .query('SELECT * FROM memos WHERE id = ?', [insertedMemoId]);
+    const memo = memoResult[0];
 
-    // 作成したメモを返信
-    const createdMemo = {
-      id: result.insertId,
-      user_id: req.user._id,
-      position: memoCount > 0 ? memoCount : 0,
-    };
-    res.status(201).json(createdMemo);
+    // クライアントに挿入されたメモを返す
+    res.status(201).json(memo);
   } catch (error) {
-    // エラーを処理する
-    res.status(500).json({ error: 'Database error' });
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -54,5 +52,73 @@ exports.getOne = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json(err);
+  }
+};
+
+exports.getAll = async (req, res) => {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT * FROM memos WHERE user_id = ? ORDER BY position DESC',
+      [req.user._id]
+    );
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.update = async (req, res) => {
+  const { memoId } = req.params;
+  const { title, description } = req.body;
+
+  try {
+    if (title === '') req.body.title = '無題';
+    if (description === '') req.body.description = '自由にご記入ください';
+
+    const [memo] = await pool.execute(
+      'SELECT * FROM memos WHERE user_id = ? AND id = ?',
+      [req.user._id, memoId]
+    );
+
+    if (!memo || memo.length === 0) {
+      return res.status(404).json('メモが見つかりません');
+    }
+
+    await pool.execute(
+      'UPDATE memos SET title = ?, description = ? WHERE id = ?',
+      [req.body.title, req.body.description, memoId]
+    );
+    const updatedMemo = {
+      id: memoId,
+      title: req.body.title,
+      description: req.body.description,
+    };
+
+    res.status(200).json(updatedMemo);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.delete = async (req, res) => {
+  const { memoId } = req.params;
+
+  try {
+    const [memo] = await pool.execute(
+      'SELECT * FROM memos WHERE user_id = ? AND id = ?',
+      [req.user._id, memoId]
+    );
+
+    if (!memo || memo.length === 0) {
+      return res.status(404).json('メモが存在しません');
+    }
+
+    await pool.execute('DELETE FROM memos WHERE id = ?', [memoId]);
+    res.status(200).json('メモを削除');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
