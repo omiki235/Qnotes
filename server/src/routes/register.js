@@ -1,17 +1,7 @@
 const router = require('express').Router();
 const { body, validationResult } = require('express-validator');
-const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
-
-const pool = mysql.createPool({
-  user: 'root',
-  host: 'localhost',
-  password: 'passw0rd',
-  database: 'nortion_data',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+const pool = require('../config/db.config');
 
 router.post(
   '/register',

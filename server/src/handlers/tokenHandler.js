@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const pool = require('../config/db.config');
 
 const query = (sql, values) => {
   return new Promise((resolve, reject) => {
