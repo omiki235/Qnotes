@@ -3,28 +3,40 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  const { username, password } = req.body;
+  // Get the password from the request body
+  const password = req.body.password;
+
   try {
-    // パスワードのハッシュ化
+    // Hash the password using bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
-    // ユーザーを生成
-    const [rows] = await pool.execute(
-      'INSERT INTO users (username, password) VALUES (?, ?)',
-      [username, hashedPassword]
+
+    // Save user data to the database
+    const [rows] = await pool.query(
+      'INSERT INTO users (username,  password) VALUES (?, ?)',
+      [req.body.username, hashedPassword]
     );
-    const userId = rows.insertId;
-    const token = jwt.sign({ id: userId }, process.env.SECRET_KEY, {
-      expiresIn: '24h',
+
+    // Generate a token
+    const token = jwt.sign(
+      { id: rows.insertId },
+      process.env.TOKEN_SECRET_KEY,
+      {
+        expiresIn: '24h',
+      }
+    );
+
+    return res.status(200).json({
+      user: {
+        id: rows.insertId,
+        username: req.body.username,
+      },
+      token,
     });
-    res
-      .status(200)
-      .json(
-        { message: 'ユーザーが正常に作成されました。' },
-        { user: { id: userId, username }, token }
-      );
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+  } catch (err) {
+    console.error('Registration error:', err);
+    return res
+      .status(500)
+      .json({ error: 'Registration failed. Please try again.' });
   }
 };
 
@@ -48,7 +60,7 @@ exports.login = async (req, res) => {
     // JWT生成
     const token = jwt.sign(
       { userId: user[0].id, username: user[0].username },
-      process.env.JWT_SECRET,
+      process.env.TOKEN_SECRET_KEY,
       { expiresIn: '1h' }
     );
 

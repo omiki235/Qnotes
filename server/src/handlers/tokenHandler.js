@@ -1,24 +1,13 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db.config');
 
-const query = (sql, values) => {
-  return new Promise((resolve, reject) => {
-    pool.query(sql, values, (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results);
-      }
-    });
-  });
-};
-
+// クライアントから渡されたJWTの検証
 const tokenDecode = (req) => {
   const bearerHeader = req.headers['authorization'];
   if (bearerHeader) {
     const bearer = bearerHeader.split(' ')[1];
     try {
-      const decodedToken = jwt.verify(bearer, process.env.SECRET_KEY);
+      const decodedToken = jwt.verify(bearer, process.env.TOKEN_SECRET_KEY);
       return decodedToken;
     } catch {
       return false;
@@ -28,30 +17,34 @@ const tokenDecode = (req) => {
   }
 };
 
+// JWT認証を検証するためのミドルウェア
 exports.verifyToken = async (req, res, next) => {
   const tokenDecoded = tokenDecode(req);
-  //デコード済みのトークンがあれば(=以前ログインor新規作成されたユーザーであれば)
+
   if (tokenDecoded) {
-    //そのトークンと一致するユーザーを探してくる。
-    const userId = tokenDecoded.id;
-    const sql = 'SELECT * FROM users WHERE id = ?';
-    const values = [userId];
-
     try {
-      const results = await query(sql, values);
-      const user = results[0];
+      // MySQLクエリを使用して、トークンと一致するユーザーを探してくる
+      const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [
+        tokenDecoded.id,
+      ]);
 
-      if (!user) {
+      // ユーザーが存在するか確認
+      if (rows.length === 1) {
+        req.user = {
+          id: rows[0].id,
+          username: rows[0].username,
+          email: rows[0].email,
+          // 必要に応じて他のユーザープロパティを追加
+        };
+        next();
+      } else {
         return res.status(401).json('権限がありません');
       }
-
-      req.user = user;
-      next();
-    } catch (error) {
-      console.error('Error fetching user from database:', error);
-      res.status(500).json('Internal Server Error');
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json('Internal Server Error');
     }
   } else {
-    res.status(401).json('権限がありませんでした');
+    res.status(401).json('権限がありません');
   }
 };

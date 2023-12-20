@@ -1,30 +1,26 @@
-const connection = require('../config/db_memo_config');
+const pool = require('../config/db.config');
 
 exports.create = async (req, res) => {
   try {
-    // 新しいメモの位置を指定するために、既存のメモの数を取得
-    const [results] = await connection
-      .promise()
-      .query('SELECT COUNT(*) as memoCount FROM memos');
-    const memoCount = results[0].memoCount;
+    // MySQLデータベースからメモの件数を取得
+    const [rows] = await pool.query('SELECT COUNT(*) as memoCount FROM memos');
+    const memoCount = rows[0].memoCount;
 
-    // 新しいメモをデータベースに挿入
-    const [insertResult] = await connection
-      .promise()
-      .query('INSERT INTO memos (user, position) VALUES (?, ?)', [
-        req.user._id, // ユーザーのIDを使用する（必要に応じて変更）
-        memoCount, // 新しいメモの位置は memoCount に設定
-      ]);
+    // memo新規作成
+    const [result] = await pool.query(
+      'INSERT INTO memos (user_id, position) VALUES (?, ?)',
+      [req.user.id, memoCount > 0 ? memoCount : 0]
+    );
 
-    const insertedMemoId = insertResult.insertId;
+    // 新しく作成されたメモのIDを取得
+    const insertedId = result.insertId;
 
-    // 挿入されたメモをデータベースから取得
-    const [memoResult] = await connection
-      .promise()
-      .query('SELECT * FROM memos WHERE id = ?', [insertedMemoId]);
+    // 作成されたメモを取得
+    const [memoResult] = await pool.query('SELECT * FROM memos WHERE id = ?', [
+      insertedId,
+    ]);
     const memo = memoResult[0];
 
-    // クライアントに挿入されたメモを返す
     res.status(201).json(memo);
   } catch (error) {
     console.error(error);

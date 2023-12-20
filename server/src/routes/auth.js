@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { body } = require('express-validator');
-const { pool } = require('../config/db.config');
+const pool = require('../config/db.config');
 const tokenHandler = require('../handlers/tokenHandler');
 const userController = require('../controllers/user');
 const validation = require('../handlers/validation');
@@ -14,14 +14,22 @@ router.post(
     .isLength({ min: 5 })
     .withMessage('ユーザー名は5文字以上必要です。')
     .custom(async (value) => {
-      const [existingUser] = await pool.execute(
-        'SELECT * FROM users WHERE username = ?',
-        [value]
-      );
-      if (existingUser.length > 0) {
-        return Promise.reject('このユーザーはすでに使用されています。');
+      try {
+        const [existingUser] = await pool.execute(
+          'SELECT * FROM users WHERE username = ?',
+          [value]
+        );
+        if (existingUser && existingUser.length > 0) {
+          return Promise.reject('このユーザーはすでに使用されています。');
+        }
+        // エラーがない場合は解決値として何かを返す
+        return true;
+      } catch (error) {
+        // エラーが発生した場合はPromise.rejectを使用してエラーメッセージを返す
+        return Promise.reject('データベースエラー: ' + error.message);
       }
     }),
+  // 以下同様に修正
   body('password')
     .isLength({ min: 7 })
     .withMessage('パスワードは7文字以上必要です.'),
