@@ -51,6 +51,6 @@ exports.verifyToken = async (req, res, next) => {
       res.status(500).json('Internal Server Error');
     }
   } else {
-    res.status(401).json('権限がありません');
+    res.status(401).json('権限がありませんでした');
   }
 };

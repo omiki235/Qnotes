@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Drawer,
   IconButton,
@@ -6,12 +6,21 @@ import {
   ListItemButton,
   Typography,
 } from '@mui/material';
-import assets from '../../assets';
 import { Box } from '@mui/system';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+import assets from '../../assets';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 
 export default function Sidebar() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user.value);
+  const memos = useSelector((state) => state.memo.value);
+  const { memoId } = useParams();
+
   return (
     <Drawer
       container={window.document.body}
