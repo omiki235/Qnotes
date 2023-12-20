@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Button, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   return (
@@ -32,7 +33,7 @@ export default function Login() {
         >
           ログイン
         </LoadingButton>
-        <Button to="/register" sx={{ textTransform: 'none' }}>
+        <Button component={Link} to="/register" sx={{ textTransform: 'none' }}>
           アカウントがない場合はこちら →
         </Button>
       </Box>
