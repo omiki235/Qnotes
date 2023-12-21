@@ -1,6 +1,6 @@
 const pool = require('../config/db.config');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const JWT = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
   // Get the password from the request body
@@ -17,7 +17,7 @@ exports.register = async (req, res) => {
     );
 
     // Generate a token
-    const token = jwt.sign(
+    const token = JWT.sign(
       { id: rows.insertId },
       process.env.TOKEN_SECRET_KEY,
       {
@@ -60,15 +60,11 @@ exports.login = async (req, res) => {
 
     user.password = undefined;
     // JWT生成
-    const token = jwt.sign(
-      { userId: user[0].id, username: user[0].username },
-      process.env.TOKEN_SECRET_KEY,
-      { expiresIn: '1h' }
-    );
-
-    res.status(200).json({ token, message: 'ログインに成功しました' });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    const token = JWT.sign({ id: user._id }, process.env.TOKEN_SECRET_KEY, {
+      expiresIn: '24h',
+    });
+    return res.status(201).json({ user, token });
+  } catch (err) {
+    return res.status(500).json(err);
   }
 };

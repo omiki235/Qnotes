@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const JWT = require('jsonwebtoken');
 const pool = require('../config/db.config');
 
 // クライアントから渡されたJWTの検証
@@ -7,7 +7,7 @@ const tokenDecode = (req) => {
   if (bearerHeader) {
     const bearer = bearerHeader.split(' ')[1];
     try {
-      const decodedToken = jwt.verify(bearer, process.env.TOKEN_SECRET_KEY);
+      const decodedToken = JWT.verify(bearer, process.env.TOKEN_SECRET_KEY);
       return decodedToken;
     } catch {
       return false;
