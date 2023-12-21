@@ -3,20 +3,16 @@ const bcrypt = require('bcrypt');
 const JWT = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  // Get the password from the request body
   const password = req.body.password;
 
   try {
-    // Hash the password using bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save user data to the database
     const [rows] = await pool.query(
       'INSERT INTO users (username,  password) VALUES (?, ?)',
       [req.body.username, hashedPassword]
     );
 
-    // Generate a token
     const token = JWT.sign(
       { id: rows.insertId },
       process.env.TOKEN_SECRET_KEY,
@@ -43,7 +39,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    // ユーザーの存在を確認
+
     const [user] = await pool.execute(
       'SELECT * FROM users WHERE username = ?',
       [username]
@@ -51,7 +47,7 @@ exports.login = async (req, res) => {
     if (user.length === 0) {
       return res.status(401).json({ error: 'ユーザーが存在しません' });
     }
-    // パスワードの比較
+
     const passwordMatch = await bcrypt.compare(password, user[0].password);
 
     if (!passwordMatch) {
@@ -59,7 +55,7 @@ exports.login = async (req, res) => {
     }
 
     user.password = undefined;
-    // JWT生成
+
     const token = JWT.sign({ id: user._id }, process.env.TOKEN_SECRET_KEY, {
       expiresIn: '24h',
     });
