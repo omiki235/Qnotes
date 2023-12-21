@@ -57,6 +57,8 @@ exports.login = async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({ error: 'パスワードが一致しません' });
     }
+
+    user.password = undefined;
     // JWT生成
     const token = jwt.sign(
       { userId: user[0].id, username: user[0].username },

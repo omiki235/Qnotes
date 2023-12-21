@@ -33,7 +33,6 @@ exports.verifyToken = async (req, res, next) => {
         req.user = {
           id: rows[0].id,
           username: rows[0].username,
-          email: rows[0].email,
           // 必要に応じて他のユーザープロパティを追加
         };
         next();

@@ -21,6 +21,11 @@ export default function Sidebar() {
   const memos = useSelector((state) => state.memo.value);
   const { memoId } = useParams();
 
+  const logout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
   return (
     <Drawer
       container={window.document.body}
@@ -45,9 +50,9 @@ export default function Sidebar() {
             }}
           >
             <Typography variant="body2" fontWeight="700">
-              testUser
+              {user.username}
             </Typography>
-            <IconButton>
+            <IconButton onClick={logout}>
               <LogoutIcon></LogoutIcon>
             </IconButton>
           </Box>
@@ -61,12 +66,7 @@ export default function Sidebar() {
               alignItems: 'center',
               justifyContent: 'space-between',
             }}
-          >
-            <Typography variant="body2" fontWeight="700">
-              お気に入り
-            </Typography>
-            <IconButton></IconButton>
-          </Box>
+          ></Box>
         </ListItemButton>
 
         <ListItemButton>

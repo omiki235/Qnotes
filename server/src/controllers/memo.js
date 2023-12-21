@@ -28,29 +28,6 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.getOne = async (req, res) => {
-  const { memoId } = req.params;
-  try {
-    // ユーザーが認証されているか
-    if (!req.user || !req.user._id) {
-      return res.status(401).json('ユーザーが認証されていません');
-    }
-    const [rows] = await pool.execute(
-      'SELECT * FROM memos WHERE user_id = ? AND id = ?',
-      [req.user._id, memoId]
-    );
-
-    if (rows.length === 0) {
-      return res.status(400).json('メモが見つかりません');
-    }
-    const memo = rows[0];
-    res.status(200).json(memo);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json(err);
-  }
-};
-
 exports.getAll = async (req, res) => {
   try {
     const [rows] = await pool.execute(
@@ -61,6 +38,28 @@ exports.getAll = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.getOne = async (req, res) => {
+  const { memoId } = req.params;
+  try {
+    // ユーザーのメモを取得
+    const [rows] = await pool.execute(
+      'SELECT * FROM memos WHERE user_id = ? AND id = ?',
+      [req.user._id, memoId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json('メモが見つかりません');
+    }
+
+    // メモが存在する場合、取得したメモをレスポンス
+    const memo = rows[0];
+    res.status(200).json(memo);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
   }
 };
 
