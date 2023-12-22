@@ -4,11 +4,7 @@ const app = express();
 require('dotenv').config();
 const PORT = 8000;
 
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-  })
-);
+app.use(cors());
 
 app.use(express.json());
 
