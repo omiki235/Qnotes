@@ -12,18 +12,17 @@ exports.register = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hashSync(password, 10);
 
-    await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [
-      username,
-      hashedPassword,
-    ]);
-
-    const token = JWT.sign(
-      { username: username },
-      process.env.TOKEN_SECRET_KEY,
-      {
-        expiresIn: '24h',
-      }
+    const [result] = await pool.query(
+      'INSERT INTO users (username, password) VALUES (?, ?)',
+      [username, hashedPassword]
     );
+
+    // ユーザーが正常に挿入された場合、ユーザーIDを取得してトークンを生成
+    const userId = result.insertId;
+
+    const token = JWT.sign({ id: userId }, process.env.TOKEN_SECRET_KEY, {
+      expiresIn: '24h',
+    });
 
     return res
       .status(200)
