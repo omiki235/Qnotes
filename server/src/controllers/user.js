@@ -2,65 +2,63 @@ const pool = require('../config/db.config');
 const bcrypt = require('bcrypt');
 const JWT = require('jsonwebtoken');
 
+require('dotenv').config();
+
+// 新規登録
 exports.register = async (req, res) => {
+  const username = req.body.username;
   const password = req.body.password;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hashSync(password, 10);
 
-    const [rows] = await pool.query(
-      'INSERT INTO users (username,  password) VALUES (?, ?)',
-      [req.body.username, hashedPassword]
-    );
+    await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [
+      username,
+      hashedPassword,
+    ]);
 
     const token = JWT.sign(
-      { id: rows.insertId },
+      { username: username },
       process.env.TOKEN_SECRET_KEY,
       {
         expiresIn: '24h',
       }
     );
 
-    return res.status(200).json({
-      user: {
-        id: rows.insertId,
-        username: req.body.username,
-      },
-      token,
-    });
-  } catch (err) {
-    console.error('Registration error:', err);
     return res
-      .status(500)
-      .json({ error: 'Registration failed. Please try again.' });
+      .status(200)
+      .json({ message: '新規登録に成功しました', token: token });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'データベースエラーが発生しました' });
   }
 };
 
+// ログイン
 exports.login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
+  const username = req.body.username;
+  const password = req.body.password;
 
-    const [user] = await pool.execute(
+  try {
+    const result = await pool.execute(
       'SELECT * FROM users WHERE username = ?',
       [username]
     );
-    if (user.length === 0) {
-      return res.status(401).json({ error: 'ユーザーが存在しません' });
-    }
 
-    const passwordMatch = await bcrypt.compare(password, user[0].password);
+    const user = result[0][0];
+    if (!user)
+      return res.status(404).send({ message: 'ユーザーを見つけられません' });
 
-    if (!passwordMatch) {
-      return res.status(401).json({ error: 'パスワードが一致しません' });
-    }
+    const passwordMatch = bcrypt.compareSync(password, user.password);
+    if (!passwordMatch)
+      return res.status(401).send({ message: 'パスワードが一致しません' });
 
-    user.password = undefined;
-
-    const token = JWT.sign({ id: user._id }, process.env.TOKEN_SECRET_KEY, {
+    const token = JWT.sign({ id: user.id }, process.env.TOKEN_SECRET_KEY, {
       expiresIn: '24h',
     });
-    return res.status(201).json({ user, token });
+    return res.status(200).json({ user, token });
   } catch (err) {
-    return res.status(500).json(err);
+    console.error(err);
+    return res.status(500).send({ message: 'ログインできませんでした。' });
   }
 };

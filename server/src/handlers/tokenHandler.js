@@ -9,7 +9,8 @@ const tokenDecode = (req) => {
     try {
       const decodedToken = JWT.verify(bearer, process.env.TOKEN_SECRET_KEY);
       return decodedToken;
-    } catch {
+    } catch (error) {
+      console.error('トークン検証エラー:', error);
       return false;
     }
   } else {
