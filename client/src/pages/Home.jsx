@@ -13,7 +13,7 @@ export default function Home() {
       setLoading(true);
       const res = await memoApi.create();
       console.log(res);
-      navigate(`/memo/${res._id}`);
+      navigate(`/memo/${res.id}`);
     } catch (error) {
       alert(error);
     } finally {
