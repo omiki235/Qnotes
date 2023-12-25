@@ -74,9 +74,6 @@ exports.update = async (req, res) => {
   const { title, description } = req.body;
 
   try {
-    if (title === '') req.body.title = '';
-    if (description === '') req.body.description = '';
-
     const [memo] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
       [req.user.id, memoId]
@@ -86,14 +83,20 @@ exports.update = async (req, res) => {
       return res.status(404).json('メモが見つかりません');
     }
 
+    // メモの内容が変更されていない場合
+    if (memo.title === title && memo.description === description) {
+      return res.status(200).json(memo);
+    }
+
     await pool.query(
       'UPDATE memos SET title = ?, description = ? WHERE id = ?',
-      [req.body.title, req.body.description, memoId]
+      [title, description, memoId]
     );
+
     const updatedMemo = {
       id: memoId,
-      title: req.body.title,
-      description: req.body.description,
+      title,
+      description,
     };
 
     res.status(200).json(updatedMemo);

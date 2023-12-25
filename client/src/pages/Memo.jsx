@@ -34,38 +34,37 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateTitle = async (e) => {
+  const updateMemo = async (updates) => {
     clearTimeout(timer);
+    try {
+      await memoApi.update(memoId, updates);
+    } catch (err) {
+      alert(err);
+    }
+  };
+
+  const updateTitle = async (e) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
 
-    timer = setTimeout(async () => {
-      try {
-        await memoApi.update(memoId, { title: newTitle });
-      } catch (err) {
-        alert(err);
-      }
+    timer = setTimeout(() => {
+      updateMemo({ title: newTitle, description });
     }, timeout);
   };
 
-  const updateDescription = async (e) => {
-    clearTimeout(timer);
+  const updateDescription = (e) => {
     const newDescription = e.target.value;
     setDescription(newDescription);
 
-    timer = setTimeout(async () => {
-      try {
-        await memoApi.update(memoId, { description: newDescription });
-      } catch (err) {
-        alert(err);
-      }
+    timer = setTimeout(() => {
+      updateMemo({ title, description: newDescription });
     }, timeout);
   };
 
   const deleteMemo = async () => {
     try {
       const deletedMemo = await memoApi.delete(memoId);
-      console.log(deletedMemo);
+      console.log('Deleted Memo:', deletedMemo);
       const newMemos = memos.filter((e) => e.id !== memoId);
       if (newMemos.length === 0) {
         navigate('/memo');
@@ -75,20 +74,27 @@ export default function Memo() {
 
       dispatch(setMemo(newMemos));
     } catch (err) {
-      alert(err);
+      console.error('Error Deleting Memo:', err);
+      alert('Error deleting memo. Please try again.');
     }
   };
 
   const onIconChange = async (newIcon) => {
-    let temp = [...memos];
-    const index = temp.findIndex((e) => e.id === memoId);
-    temp[index] = { ...temp[index], icon: newIcon };
-    setIcon(newIcon);
-    dispatch(setMemo(temp));
     try {
+      // 1. ローカルの状態を更新
+      setIcon(newIcon);
+
+      // 2. Redux ストアの状態を更新
+      const updatedMemos = memos.map((memo) =>
+        memo.id === memoId ? { ...memo, icon: newIcon } : memo
+      );
+      dispatch(setMemo(updatedMemos));
+
+      // 3. データベースを更新
       await memoApi.update(memoId, { icon: newIcon });
     } catch (err) {
-      alert(err);
+      console.error('Error updating icon:', err);
+      alert('Error updating icon. Please try again.');
     }
   };
 
@@ -109,9 +115,10 @@ export default function Memo() {
       <Box sx={{ padding: '10px 50px' }}>
         <Box>
           <EmojiPicker icon={icon} onChange={onIconChange} />
+
           <TextField
             onChange={updateTitle}
-            value={title}
+            value={title !== null ? title : ''}
             placeholder="無題"
             variant="outlined"
             fullWidth
@@ -126,7 +133,7 @@ export default function Memo() {
           ></TextField>
           <TextField
             onChange={updateDescription}
-            value={description}
+            value={description !== null ? description : ''}
             placeholder="ご自由にご記入ください"
             variant="outlined"
             fullWidth

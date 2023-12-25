@@ -4,11 +4,11 @@ import { Typography } from '@mui/material';
 import Picker from '@emoji-mart/react';
 
 export default function EmojiPicker(props) {
-  const [selectedEmoji, setSelectedEmoji] = useState();
+  const [selectedEmoji, setSelectedEmoji] = useState(props.icon || '📝');
   const [isShowPicker, setIsShowPicker] = useState(false);
 
   useEffect(() => {
-    setSelectedEmoji(props.icon);
+    setSelectedEmoji(props.icon || '📝');
   }, [props.icon]);
 
   const showPicker = () => setIsShowPicker(!isShowPicker);
