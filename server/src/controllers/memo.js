@@ -109,7 +109,7 @@ exports.delete = async (req, res) => {
   try {
     const [memo] = await pool.execute(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
-      [req.user._id, memoId]
+      [req.user.id, memoId]
     );
 
     if (!memo || memo.length === 0) {

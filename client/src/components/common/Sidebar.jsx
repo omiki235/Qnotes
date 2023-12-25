@@ -9,11 +9,11 @@ import {
 import { Box } from '@mui/system';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import assets from '../../assets';
+import { setMemo } from '../../redux/features/memoSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
+import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import memoApi from '../../api/memoApi';
-import { setMemo } from '../../redux/features/memoSlice';
 
 export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -41,7 +41,7 @@ export default function Sidebar() {
   }, [dispatch]);
 
   useEffect(() => {
-    const activeIndex = memos.findIndex((e) => e._id === memoId);
+    const activeIndex = memos.findIndex((e) => e.id === memoId);
     setActiveIndex(activeIndex);
   }, [memoId, memos, navigate]);
 
@@ -50,7 +50,7 @@ export default function Sidebar() {
       const res = await memoApi.create();
       const newMemos = [res, ...memos];
       dispatch(setMemo(newMemos));
-      navigate(`memo/${res._id}`);
+      navigate(`/memo/${res.id}`);
     } catch (err) {
       alert(err);
     }
@@ -83,7 +83,7 @@ export default function Sidebar() {
               {user.username}
             </Typography>
             <IconButton onClick={logout}>
-              <LogoutIcon></LogoutIcon>
+              <LogoutIcon />
             </IconButton>
           </Box>
         </ListItemButton>
@@ -121,8 +121,8 @@ export default function Sidebar() {
           <ListItemButton
             sx={{ pl: '20px' }}
             component={Link}
-            to={`/memo/${item._id}`}
-            key={item._id}
+            to={`/memo/${item.id}`}
+            key={item.id}
             selected={index === activeIndex}
           >
             <Typography>
