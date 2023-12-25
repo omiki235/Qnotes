@@ -71,7 +71,6 @@ export default function Memo() {
       } else {
         navigate(`/memo/${newMemos[0].id}`);
       }
-
       dispatch(setMemo(newMemos));
     } catch (err) {
       console.error('Error Deleting Memo:', err);
@@ -81,16 +80,13 @@ export default function Memo() {
 
   const onIconChange = async (newIcon) => {
     try {
-      // 1. ローカルの状態を更新
       setIcon(newIcon);
 
-      // 2. Redux ストアの状態を更新
       const updatedMemos = memos.map((memo) =>
         memo.id === memoId ? { ...memo, icon: newIcon } : memo
       );
       dispatch(setMemo(updatedMemos));
 
-      // 3. データベースを更新
       await memoApi.update(memoId, { icon: newIcon });
     } catch (err) {
       console.error('Error updating icon:', err);

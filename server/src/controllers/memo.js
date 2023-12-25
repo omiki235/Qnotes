@@ -39,6 +39,8 @@ exports.getAll = async (req, res) => {
       id: row.id,
       user_id: row.user_id,
       position: row.position,
+      title: row.title,
+      icon: row.icon,
     }));
 
     res.status(200).json(memos);
@@ -110,19 +112,16 @@ exports.delete = async (req, res) => {
   const { memoId } = req.params;
 
   try {
-    const [memo] = await pool.execute(
+    const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
       [req.user.id, memoId]
     );
 
-    if (!memo || memo.length === 0) {
-      return res.status(404).json('メモが存在しません');
-    }
+    if (rows.length === 0) return res.status(404).json('メモが存在しません');
 
-    await pool.execute('DELETE FROM memos WHERE id = ?', [memoId]);
+    await pool.query('DELETE FROM memos WHERE id = ?', [memoId]);
     res.status(200).json('メモを削除');
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };

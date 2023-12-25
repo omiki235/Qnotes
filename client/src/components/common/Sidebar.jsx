@@ -9,7 +9,7 @@ import {
 import { Box } from '@mui/system';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { setMemo } from '../../redux/features/memoSlice';
+import { createMemo, setMemo } from '../../redux/features/memoSlice';
 import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -32,6 +32,7 @@ export default function Sidebar() {
     const getMemos = async () => {
       try {
         const res = await memoApi.getAll();
+        console.log('API Response:', res);
         dispatch(setMemo(res));
       } catch (err) {
         alert(err);
@@ -48,8 +49,7 @@ export default function Sidebar() {
   const addMemo = async () => {
     try {
       const res = await memoApi.create();
-      const newMemos = [res, ...memos];
-      dispatch(setMemo(newMemos));
+      dispatch(createMemo(res));
       navigate(`/memo/${res.id}`);
     } catch (err) {
       alert(err);
