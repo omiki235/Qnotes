@@ -10,6 +10,7 @@ export default function Memo() {
   const { memoId } = useParams();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -31,6 +32,11 @@ export default function Memo() {
   const updateMemoInApi = async (updates) => {
     clearTimeout(timer);
     try {
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append('image', selectedImage);
+        await memoApi.uploadImage(memoId, formData);
+      }
       await memoApi.update(memoId, updates);
       const updatedMemo = await memoApi.getOne(memoId);
       handleMemoUpdate(updatedMemo);
@@ -61,9 +67,15 @@ export default function Memo() {
     dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setSelectedImage(file);
+  };
+
   return (
     <>
       <Box sx={{ padding: '100px 150px' }}>
+        <input type="file" accept="image/*" onChange={handleImageUpload} />
         <Box>
           <TextField
             onChange={updateTitle}
@@ -92,6 +104,14 @@ export default function Memo() {
               '.MuiOutlinedInput-root': { fontSize: '1.2rem' },
             }}
           ></TextField>
+
+          {selectedImage && (
+            <img
+              src={URL.createObjectURL(selectedImage)}
+              alt="Selected"
+              style={{ maxWidth: '100%', marginTop: '10px' }}
+            />
+          )}
         </Box>
       </Box>
     </>
