@@ -63,15 +63,7 @@ export default function Memo() {
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      ></Box>
-
-      <Box sx={{ padding: '10px 50px' }}>
+      <Box sx={{ padding: '100px 150px' }}>
         <Box>
           <TextField
             onChange={updateTitle}

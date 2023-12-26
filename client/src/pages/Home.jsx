@@ -11,7 +11,7 @@ export default function Home() {
         justifyContent: 'center',
       }}
     >
-      新規ページボタンからメモを作成しよう
+      <h1>新規ページボタンからメモを作成しよう</h1>
     </Box>
   );
 }

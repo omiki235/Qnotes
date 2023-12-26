@@ -13,7 +13,6 @@ axiosClient.interceptors.request.use(async (config) => {
     ...config,
     headers: {
       'Content-Type': 'application/json',
-
       // リクエストヘッダーにJWTをつけてサーバーに渡す
       authorization: `Bearer ${getToken()}`,
     },
@@ -28,6 +27,7 @@ axiosClient.interceptors.response.use(
     if (!err.response) {
       return alert(err);
     }
+
     throw err.response;
   }
 );

@@ -111,7 +111,7 @@ export default function Sidebar() {
     >
       <List
         sx={{
-          width: 250,
+          width: 300,
           height: '100vh',
           backgroundColor: assets.colors.secondary,
         }}
@@ -125,7 +125,7 @@ export default function Sidebar() {
               justifyContent: 'space-between',
             }}
           >
-            <Typography variant="body2" fontWeight="700">
+            <Typography variant="body2" fontWeight="700" paddingLeft="20px">
               {user.username}
             </Typography>
             <IconButton onClick={logout}>
@@ -152,6 +152,7 @@ export default function Sidebar() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              paddingLeft: '20px',
             }}
           >
             <Typography variant="body2" fontWeight="700">
