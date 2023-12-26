@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/system';
 import { IconButton, TextField } from '@mui/material';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import StarBorderOutlinedIcon from '@mui/icons-material/StarBorderOutlined';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setMemo } from '../redux/features/memoSlice';
+import { setMemo, updateMemo } from '../redux/features/memoSlice';
 import memoApi from '../api/memoApi';
 
 export default function Memo() {
   const { memoId } = useParams();
   const [title, setTitle] = useState('');
+
   const [description, setDescription] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -32,49 +32,54 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateTitle = async (e) => {
+  const updateMemoInApi = async (updates) => {
     clearTimeout(timer);
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-
-    timer = setTimeout(async () => {
-      try {
-        await memoApi.update(memoId, { title: newTitle });
-      } catch (err) {
-        alert(err);
-      }
-    }, timeout);
-  };
-
-  const updateDescription = async (e) => {
-    clearTimeout(timer);
-    const newDescription = e.target.value;
-    setDescription(newDescription);
-
-    timer = setTimeout(async () => {
-      try {
-        await memoApi.update(memoId, { description: newDescription });
-      } catch (err) {
-        alert(err);
-      }
-    }, timeout);
-  };
-
-  const deleteMemo = async (e) => {
     try {
-      const deletedMemo = await memoApi.delete(memoId);
-      console.log(deletedMemo);
-      const newMemos = memos.filter((e) => e._id !== memoId);
-      if (newMemos.length === 0) {
-        navigate('/memo');
-      } else {
-        navigate(`/memo/${newMemos[0]._id}`);
-      }
-
-      dispatch(setMemo(newMemos));
+      await memoApi.update(memoId, updates);
+      const updatedMemo = await memoApi.getOne(memoId);
+      handleMemoUpdate(updatedMemo);
     } catch (err) {
       alert(err);
     }
+  };
+
+  const updateTitle = async (e) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+
+    timer = setTimeout(() => {
+      updateMemoInApi({ title: newTitle, description });
+    }, timeout);
+  };
+
+  const updateDescription = (e) => {
+    const newDescription = e.target.value;
+    setDescription(newDescription);
+
+    timer = setTimeout(() => {
+      updateMemoInApi({ title, description: newDescription });
+    }, timeout);
+  };
+
+  const deleteMemo = async () => {
+    try {
+      const deletedMemo = await memoApi.delete(memoId);
+      console.log('Deleted Memo:', deletedMemo);
+      const newMemos = memos.filter((e) => e.id !== memoId);
+      if (newMemos.length === 0) {
+        navigate('/memo');
+      } else {
+        navigate(`/memo/${newMemos[0].id}`);
+      }
+      dispatch(setMemo(newMemos));
+    } catch (err) {
+      console.error('Error Deleting Memo:', err);
+      alert('Error deleting memo. Please try again.');
+    }
+  };
+
+  const handleMemoUpdate = (updatedMemo) => {
+    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
   };
 
   return (
@@ -86,9 +91,6 @@ export default function Memo() {
           width: '100%',
         }}
       >
-        <IconButton>
-          <StarBorderOutlinedIcon />
-        </IconButton>
         <IconButton variant="outlined" color="error" onClick={deleteMemo}>
           <DeleteOutlinedIcon />
         </IconButton>
@@ -98,7 +100,7 @@ export default function Memo() {
         <Box>
           <TextField
             onChange={updateTitle}
-            value={title}
+            value={title !== null ? title : ''}
             placeholder="無題"
             variant="outlined"
             fullWidth
@@ -113,8 +115,8 @@ export default function Memo() {
           ></TextField>
           <TextField
             onChange={updateDescription}
-            value={description}
-            placeholder="空のページ"
+            value={description !== null ? description : ''}
+            placeholder="ご自由にご記入ください"
             variant="outlined"
             fullWidth
             sx={{

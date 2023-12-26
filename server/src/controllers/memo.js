@@ -1,27 +1,25 @@
 const pool = require('../config/db.config');
+require('dotenv').config();
 
 exports.create = async (req, res) => {
   try {
-    // MySQLデータベースからメモの件数を取得
-    const [rows] = await pool.query('SELECT COUNT(*) as memoCount FROM memos');
-    const memoCount = rows[0].memoCount;
+    const userId = req.user.id || DEFAULT_USER_ID;
 
-    // memo新規作成
+    const [rows] = await pool.query('SELECT COUNT(*) as count FROM memos');
+    const memoCount = rows[0].count;
+
     const [result] = await pool.query(
       'INSERT INTO memos (user_id, position) VALUES (?, ?)',
-      [req.user.id, memoCount > 0 ? memoCount : 0]
+      [userId, memoCount > 0 ? memoCount : 0]
     );
 
-    // 新しく作成されたメモのIDを取得
-    const insertedId = result.insertId;
+    const insertedMemo = {
+      id: result.insertId,
+      user_id: userId,
+      position: memoCount > 0 ? memoCount : 0,
+    };
 
-    // 作成されたメモを取得
-    const [memoResult] = await pool.query('SELECT * FROM memos WHERE id = ?', [
-      insertedId,
-    ]);
-    const memo = memoResult[0];
-
-    res.status(201).json(memo);
+    res.status(201).json(insertedMemo);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -30,11 +28,22 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.execute(
+    const userId = req.user.id || DEFAULT_USER_ID;
+
+    const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? ORDER BY position DESC',
-      [req.user._id]
+      [userId]
     );
-    res.status(200).json(rows);
+
+    const memos = rows.map((row) => ({
+      id: row.id,
+      user_id: row.user_id,
+      position: row.position,
+      title: row.title,
+      icon: row.icon,
+    }));
+
+    res.status(200).json(memos);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -45,15 +54,14 @@ exports.getOne = async (req, res) => {
   const { memoId } = req.params;
   try {
     // ユーザーのメモを取得
-    const [rows] = await pool.execute(
+    const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
-      [req.user._id, memoId]
+      [req.user.id, memoId]
     );
 
     if (rows.length === 0) {
       return res.status(400).json('メモが見つかりません');
     }
-
     // メモが存在する場合、取得したメモをレスポンス
     const memo = rows[0];
     res.status(200).json(memo);
@@ -68,26 +76,29 @@ exports.update = async (req, res) => {
   const { title, description } = req.body;
 
   try {
-    if (title === '') req.body.title = '無題';
-    if (description === '') req.body.description = '自由にご記入ください';
-
-    const [memo] = await pool.execute(
+    const [memo] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
-      [req.user._id, memoId]
+      [req.user.id, memoId]
     );
 
     if (!memo || memo.length === 0) {
       return res.status(404).json('メモが見つかりません');
     }
 
-    await pool.execute(
+    // メモの内容が変更されていない場合
+    if (memo.title === title && memo.description === description) {
+      return res.status(200).json(memo);
+    }
+
+    await pool.query(
       'UPDATE memos SET title = ?, description = ? WHERE id = ?',
-      [req.body.title, req.body.description, memoId]
+      [title, description, memoId]
     );
+
     const updatedMemo = {
       id: memoId,
-      title: req.body.title,
-      description: req.body.description,
+      title,
+      description,
     };
 
     res.status(200).json(updatedMemo);
@@ -101,19 +112,16 @@ exports.delete = async (req, res) => {
   const { memoId } = req.params;
 
   try {
-    const [memo] = await pool.execute(
+    const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
-      [req.user._id, memoId]
+      [req.user.id, memoId]
     );
 
-    if (!memo || memo.length === 0) {
-      return res.status(404).json('メモが存在しません');
-    }
+    if (rows.length === 0) return res.status(404).json('メモが存在しません');
 
-    await pool.execute('DELETE FROM memos WHERE id = ?', [memoId]);
+    await pool.query('DELETE FROM memos WHERE id = ?', [memoId]);
     res.status(200).json('メモを削除');
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
