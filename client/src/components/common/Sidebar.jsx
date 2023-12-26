@@ -9,7 +9,12 @@ import {
 import { Box } from '@mui/system';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { createMemo, setMemo } from '../../redux/features/memoSlice';
+import {
+  createMemo,
+  setMemo,
+  deleteMemo,
+} from '../../redux/features/memoSlice';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -57,21 +62,44 @@ export default function Sidebar() {
     }
   };
 
-  const onIconChange = async (newIcon) => {
+  const deleteMemoHandler = async (deletedMemoId) => {
+    try {
+      await memoApi.delete(deletedMemoId);
+      dispatch(deleteMemo(deletedMemoId));
+      const newMemos = memos.filter((e) => e.id !== deletedMemoId);
+
+      if (newMemos.length > 0) {
+        const currentIndex = newMemos.findIndex(
+          (memo) => memo.id === deletedMemoId
+        );
+        const nextIndex = (currentIndex + 1) % newMemos.length;
+        const nextMemoId = newMemos[nextIndex].id;
+        navigate(`/memo/${nextMemoId}`);
+      } else {
+        navigate('/memo');
+      }
+    } catch (err) {
+      alert('Error deleting memo. Please try again.');
+    }
+  };
+
+  const onIconChange = async (newIcon, memoId) => {
     try {
       setIcon(newIcon);
-      console.log(newIcon);
 
-      const updatedMemos = memos.map((memo) =>
-        memo.id === memoId ? { ...memo, icon: newIcon } : memo
-      );
-      dispatch(setMemo(updatedMemos));
-
-      await memoApi.update(memoId, { icon: newIcon });
+      const updatedMemo = await memoApi.update(memoId, { icon: newIcon });
+      handleMemoUpdate(updatedMemo);
     } catch (err) {
-      console.error('Error updating icon:', err);
       alert('Error updating icon. Please try again.');
     }
+  };
+
+  const handleMemoUpdate = (updatedMemo) => {
+    dispatch(
+      setMemo(
+        memos.map((memo) => (memo.id === updatedMemo.id ? updatedMemo : memo))
+      )
+    );
   };
 
   return (
@@ -127,7 +155,7 @@ export default function Sidebar() {
             }}
           >
             <Typography variant="body2" fontWeight="700">
-              プライベート
+              新規ページ
             </Typography>
             <IconButton onClick={addMemo}>
               <AddBoxIcon />
@@ -146,6 +174,9 @@ export default function Sidebar() {
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <EmojiPicker icon={item.icon} onChange={onIconChange} />
               <Typography component="span">{item.title || '無題'}</Typography>
+              <IconButton onClick={() => deleteMemoHandler(item.id)}>
+                <DeleteOutlineIcon />
+              </IconButton>
             </Box>
           </ListItemButton>
         ))}
