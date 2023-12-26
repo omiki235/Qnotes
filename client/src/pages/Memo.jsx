@@ -4,14 +4,13 @@ import { IconButton, TextField } from '@mui/material';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setMemo } from '../redux/features/memoSlice';
+import { setMemo, updateMemo } from '../redux/features/memoSlice';
 import memoApi from '../api/memoApi';
-import EmojiPicker from '../components/common/EmojiPicker';
 
 export default function Memo() {
   const { memoId } = useParams();
   const [title, setTitle] = useState('');
-  const [icon, setIcon] = useState('');
+
   const [description, setDescription] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -23,7 +22,6 @@ export default function Memo() {
         const res = await memoApi.getOne(memoId);
         setTitle(res.title);
         setDescription(res.description);
-        setIcon(res.icon);
       } catch (err) {
         alert(err);
       }
@@ -34,10 +32,12 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateMemo = async (updates) => {
+  const updateMemoInApi = async (updates) => {
     clearTimeout(timer);
     try {
       await memoApi.update(memoId, updates);
+      const updatedMemo = await memoApi.getOne(memoId);
+      handleMemoUpdate(updatedMemo);
     } catch (err) {
       alert(err);
     }
@@ -48,7 +48,7 @@ export default function Memo() {
     setTitle(newTitle);
 
     timer = setTimeout(() => {
-      updateMemo({ title: newTitle, description });
+      updateMemoInApi({ title: newTitle, description });
     }, timeout);
   };
 
@@ -57,7 +57,7 @@ export default function Memo() {
     setDescription(newDescription);
 
     timer = setTimeout(() => {
-      updateMemo({ title, description: newDescription });
+      updateMemoInApi({ title, description: newDescription });
     }, timeout);
   };
 
@@ -78,20 +78,8 @@ export default function Memo() {
     }
   };
 
-  const onIconChange = async (newIcon) => {
-    try {
-      setIcon(newIcon);
-
-      const updatedMemos = memos.map((memo) =>
-        memo.id === memoId ? { ...memo, icon: newIcon } : memo
-      );
-      dispatch(setMemo(updatedMemos));
-
-      await memoApi.update(memoId, { icon: newIcon });
-    } catch (err) {
-      console.error('Error updating icon:', err);
-      alert('Error updating icon. Please try again.');
-    }
+  const handleMemoUpdate = (updatedMemo) => {
+    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
   };
 
   return (
@@ -110,8 +98,6 @@ export default function Memo() {
 
       <Box sx={{ padding: '10px 50px' }}>
         <Box>
-          <EmojiPicker icon={icon} onChange={onIconChange} />
-
           <TextField
             onChange={updateTitle}
             value={title !== null ? title : ''}

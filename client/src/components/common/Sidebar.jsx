@@ -14,11 +14,13 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import memoApi from '../../api/memoApi';
+import EmojiPicker from '../common/EmojiPicker';
 
 export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [setIcon] = useState('');
   const user = useSelector((state) => state.user.value);
   const memos = useSelector((state) => state.memo.value);
   const { memoId } = useParams();
@@ -32,7 +34,6 @@ export default function Sidebar() {
     const getMemos = async () => {
       try {
         const res = await memoApi.getAll();
-        console.log('API Response:', res);
         dispatch(setMemo(res));
       } catch (err) {
         alert(err);
@@ -53,6 +54,23 @@ export default function Sidebar() {
       navigate(`/memo/${res.id}`);
     } catch (err) {
       alert(err);
+    }
+  };
+
+  const onIconChange = async (newIcon) => {
+    try {
+      setIcon(newIcon);
+      console.log(newIcon);
+
+      const updatedMemos = memos.map((memo) =>
+        memo.id === memoId ? { ...memo, icon: newIcon } : memo
+      );
+      dispatch(setMemo(updatedMemos));
+
+      await memoApi.update(memoId, { icon: newIcon });
+    } catch (err) {
+      console.error('Error updating icon:', err);
+      alert('Error updating icon. Please try again.');
     }
   };
 
@@ -125,10 +143,10 @@ export default function Sidebar() {
             key={item.id}
             selected={index === activeIndex}
           >
-            <Typography>
-              {item.icon}
-              {item.title}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <EmojiPicker icon={item.icon} onChange={onIconChange} />
+              <Typography component="span">{item.title || '無題'}</Typography>
+            </Box>
           </ListItemButton>
         ))}
       </List>

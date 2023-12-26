@@ -26,9 +26,9 @@ export default function EmojiPicker(props) {
   return (
     <Box>
       <Typography
-        variant="h3"
+        paragraph={false}
         fontWeight="700"
-        sx={{ cursor: 'pointer' }}
+        sx={{ cursor: 'pointer', fontSize: '30px', marginRight: '8px' }}
         onClick={showPicker}
       >
         {selectedEmoji}
@@ -37,7 +37,7 @@ export default function EmojiPicker(props) {
         sx={{
           display: isShowPicker ? 'block' : 'none',
           position: 'absolute',
-          zIndex: 100,
+          zIndex: 700,
         }}
       >
         <Picker onEmojiSelect={selectEmoji} />
