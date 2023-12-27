@@ -13,6 +13,7 @@ import {
   createMemo,
   setMemo,
   deleteMemo,
+  updateMemo,
 } from '../../redux/features/memoSlice';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -67,45 +68,32 @@ export default function Sidebar() {
       await memoApi.delete(deletedMemoId);
       dispatch(deleteMemo(deletedMemoId));
       const newMemos = memos.filter((e) => e.id !== deletedMemoId);
-
       if (newMemos.length > 0) {
-        const currentIndex = newMemos.findIndex(
-          (memo) => memo.id === deletedMemoId
-        );
-        const nextIndex = (currentIndex + 1) % newMemos.length;
-        const nextMemoId = newMemos[nextIndex].id;
-        navigate(`/memo/${nextMemoId}`);
+        navigate(`/memo/${newMemos[0].id}`);
       } else {
         navigate('/memo');
       }
     } catch (err) {
-      alert('Error deleting memo. Please try again.');
+      alert(err);
     }
-  };
-
-  const handleMemoUpdate = (updatedMemo) => {
-    dispatch(
-      setMemo(
-        memos.map((memo) => (memo.id === updatedMemo.id ? updatedMemo : memo))
-      )
-    );
   };
 
   const handleImageUpload = async () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
+
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      console.log('Selected file:', file);
       if (file) {
         try {
           const formData = new FormData();
           formData.append('image', file);
-          console.log('Form Data with File:', formData);
           await memoApi.uploadImage(memoId, formData);
           const updatedMemo = await memoApi.getOne(memoId);
-          handleMemoUpdate(updatedMemo);
+          dispatch(
+            updateMemo({ id: updatedMemo.id, updatedData: updatedMemo })
+          );
         } catch (err) {
           alert('Error uploading image. Please try again.');
         }

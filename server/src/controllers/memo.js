@@ -62,8 +62,10 @@ exports.getOne = async (req, res) => {
     if (rows.length === 0) {
       return res.status(400).json('メモが見つかりません');
     }
-    // メモが存在する場合、取得したメモをレスポンス
     const memo = rows[0];
+    if (memo.image_data) {
+      memo.image_data = memo.image_data.toString('base64');
+    }
     res.status(200).json(memo);
   } catch (err) {
     console.error(err);
@@ -110,15 +112,12 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   const { memoId } = req.params;
-
   try {
     const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
       [req.user.id, memoId]
     );
-
     if (rows.length === 0) return res.status(404).json('メモが存在しません');
-
     await pool.query('DELETE FROM memos WHERE id = ?', [memoId]);
     res.status(200).json('メモを削除');
   } catch (err) {
@@ -128,22 +127,17 @@ exports.delete = async (req, res) => {
 
 exports.uploadImage = async (req, res) => {
   try {
-    console.log('File:', req.file); // ファイル情報をログに出力
+    console.log('File:', req.file);
     const memoId = req.params.memoId;
-
     if (!req.file) {
-      console.log('No file uploaded'); // ファイルがアップロードされなかった場合のログ
+      console.log('No file uploaded');
       return res.status(400).send('No file uploaded');
     }
-
     const image = req.file.buffer;
-
-    // 画像のバイナリデータをデータベースに保存する例（MySQLの場合）
     await pool.query('UPDATE memos SET image_data = ? WHERE id = ?', [
       image,
       memoId,
     ]);
-
     res.status(200).send('Image uploaded successfully');
   } catch (error) {
     console.error(error);
