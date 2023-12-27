@@ -1,24 +1,25 @@
 const router = require('express').Router();
-const multer = require('multer');
 const memoController = require('../controllers/memo');
 const tokenHandler = require('../handlers/tokenHandler');
+const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
-// ファイルのアップロードを処理するためのmulterモジュールの読み込み
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Not an image! Please upload an image file.'), false);
-    }
+const uploadsDir = path.join(__dirname, '..', 'uploads'); // ディレクトリのパスを調整
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+const imageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir); // 'uploads/' ディレクトリに保存
   },
-
-  limits: {
-    fileSize: 1024 * 1024 * 5,
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // ファイル名をタイムスタンプに設定
   },
 });
+
+const upload = multer({ storage: imageStorage });
 
 // メモを作成
 router.post('/', tokenHandler.verifyToken, memoController.create);
@@ -38,6 +39,7 @@ router.delete('/:memoId', tokenHandler.verifyToken, memoController.delete);
 // 画像をアップロードしてメモに関連付けるエンドポイント
 router.post(
   '/:memoId/upload-image',
+  tokenHandler.verifyToken,
   upload.single('image'),
   memoController.uploadImage
 );

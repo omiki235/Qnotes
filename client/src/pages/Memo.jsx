@@ -95,13 +95,15 @@ export default function Memo() {
               '.MuiOutlinedInput-root': { fontSize: '1.2rem' },
             }}
           ></TextField>
-          {selectedImage && (
-            <img
-              src={`data:image/png;base64,${selectedImage}`}
-              alt="Selected"
-              style={{ maxWidth: '100%', marginTop: '10px' }}
-            />
-          )}
+          <div>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Selected"
+                style={{ maxWidth: '100%', marginTop: '10px' }}
+              />
+            )}
+          </div>
         </Box>
       </Box>
     </>

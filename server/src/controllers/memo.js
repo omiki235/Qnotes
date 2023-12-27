@@ -1,5 +1,6 @@
 const pool = require('../config/db.config');
 require('dotenv').config();
+const path = require('path');
 
 exports.create = async (req, res) => {
   try {
@@ -127,18 +128,22 @@ exports.delete = async (req, res) => {
 
 exports.uploadImage = async (req, res) => {
   try {
-    console.log('File:', req.file);
     const memoId = req.params.memoId;
-    if (!req.file) {
-      console.log('No file uploaded');
+    const file = req.file;
+
+    if (!file) {
       return res.status(400).send('No file uploaded');
     }
-    const image = req.file.buffer;
+    const imagePath = path.join('uploads', file.filename);
+
     await pool.query('UPDATE memos SET image_data = ? WHERE id = ?', [
-      image,
+      imagePath,
       memoId,
     ]);
-    res.status(200).send('Image uploaded successfully');
+
+    res
+      .status(200)
+      .json({ message: 'Image uploaded successfully', path: imagePath });
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
