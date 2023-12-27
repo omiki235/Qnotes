@@ -7,17 +7,12 @@ const axiosClient = axios.create({
   baseURL: BASE_URL,
 });
 
-// APIを叩く前の前処理
 axiosClient.interceptors.request.use(async (config) => {
-  return {
-    ...config,
-    headers: {
-      'Content-Type': 'application/json',
-
-      // リクエストヘッダーにJWTをつけてサーバーに渡す
-      authorization: `Bearer ${getToken()}`,
-    },
-  };
+  if (!config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  config.headers['authorization'] = `Bearer ${getToken()}`;
+  return config;
 });
 
 axiosClient.interceptors.response.use(
@@ -28,6 +23,7 @@ axiosClient.interceptors.response.use(
     if (!err.response) {
       return alert(err);
     }
+
     throw err.response;
   }
 );

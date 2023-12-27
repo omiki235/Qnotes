@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/system';
-import { IconButton, TextField } from '@mui/material';
-import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { setMemo, updateMemo } from '../redux/features/memoSlice';
+import { TextField } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { updateMemo } from '../redux/features/memoSlice';
 import memoApi from '../api/memoApi';
 
 export default function Memo() {
   const { memoId } = useParams();
   const [title, setTitle] = useState('');
-
   const [description, setDescription] = useState('');
-  const navigate = useNavigate();
+  const [selectedImage, setSelectedImage] = useState(null);
   const dispatch = useDispatch();
-  const memos = useSelector((state) => state.memo.value);
 
   useEffect(() => {
     const getMemo = async () => {
@@ -22,6 +19,10 @@ export default function Memo() {
         const res = await memoApi.getOne(memoId);
         setTitle(res.title);
         setDescription(res.description);
+        const newImageUrl = res.imagePath
+          ? `http://localhost:8000/${res.imagePath}`
+          : null;
+        setSelectedImage(newImageUrl);
       } catch (err) {
         alert(err);
       }
@@ -32,12 +33,20 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateMemoInApi = async (updates) => {
+  const updateMemoInApi = async (newTitle, newDescription) => {
     clearTimeout(timer);
     try {
-      await memoApi.update(memoId, updates);
-      const updatedMemo = await memoApi.getOne(memoId);
-      handleMemoUpdate(updatedMemo);
+      await memoApi.update(memoId, {
+        title: newTitle,
+        description: newDescription,
+      });
+      dispatch(
+        updateMemo({
+          id: memoId,
+          updatedData: { title: newTitle, description: newDescription },
+        })
+      );
+      setSelectedImage((currentImage) => currentImage);
     } catch (err) {
       alert(err);
     }
@@ -48,7 +57,7 @@ export default function Memo() {
     setTitle(newTitle);
 
     timer = setTimeout(() => {
-      updateMemoInApi({ title: newTitle, description });
+      updateMemoInApi(newTitle, description);
     }, timeout);
   };
 
@@ -57,46 +66,15 @@ export default function Memo() {
     setDescription(newDescription);
 
     timer = setTimeout(() => {
-      updateMemoInApi({ title, description: newDescription });
+      updateMemoInApi(title, newDescription);
     }, timeout);
   };
 
-  const deleteMemo = async () => {
-    try {
-      const deletedMemo = await memoApi.delete(memoId);
-      console.log('Deleted Memo:', deletedMemo);
-      const newMemos = memos.filter((e) => e.id !== memoId);
-      if (newMemos.length === 0) {
-        navigate('/memo');
-      } else {
-        navigate(`/memo/${newMemos[0].id}`);
-      }
-      dispatch(setMemo(newMemos));
-    } catch (err) {
-      console.error('Error Deleting Memo:', err);
-      alert('Error deleting memo. Please try again.');
-    }
-  };
-
-  const handleMemoUpdate = (updatedMemo) => {
-    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
-  };
+  console.log(selectedImage);
 
   return (
     <>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        <IconButton variant="outlined" color="error" onClick={deleteMemo}>
-          <DeleteOutlinedIcon />
-        </IconButton>
-      </Box>
-
-      <Box sx={{ padding: '10px 50px' }}>
+      <Box sx={{ padding: '100px 150px' }}>
         <Box>
           <TextField
             onChange={updateTitle}
@@ -125,6 +103,7 @@ export default function Memo() {
               '.MuiOutlinedInput-root': { fontSize: '1.2rem' },
             }}
           ></TextField>
+          <div>{selectedImage && <img src={selectedImage} alt="Memo" />}</div>
         </Box>
       </Box>
     </>

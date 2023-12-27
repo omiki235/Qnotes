@@ -9,18 +9,24 @@ import {
 import { Box } from '@mui/system';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { createMemo, setMemo } from '../../redux/features/memoSlice';
+import {
+  createMemo,
+  setMemo,
+  deleteMemo,
+  updateMemo,
+} from '../../redux/features/memoSlice';
+import DescriptionIcon from '@mui/icons-material/Description';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import memoApi from '../../api/memoApi';
-import EmojiPicker from '../common/EmojiPicker';
 
 export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [setIcon] = useState('');
   const user = useSelector((state) => state.user.value);
   const memos = useSelector((state) => state.memo.value);
   const { memoId } = useParams();
@@ -57,21 +63,48 @@ export default function Sidebar() {
     }
   };
 
-  const onIconChange = async (newIcon) => {
+  const deleteMemoHandler = async (deletedMemoId) => {
     try {
-      setIcon(newIcon);
-      console.log(newIcon);
-
-      const updatedMemos = memos.map((memo) =>
-        memo.id === memoId ? { ...memo, icon: newIcon } : memo
-      );
-      dispatch(setMemo(updatedMemos));
-
-      await memoApi.update(memoId, { icon: newIcon });
+      await memoApi.delete(deletedMemoId);
+      dispatch(deleteMemo(deletedMemoId));
+      const newMemos = memos.filter((e) => e.id !== deletedMemoId);
+      if (newMemos.length > 0) {
+        navigate(`/memo/${newMemos[0].id}`);
+      } else {
+        navigate('/memo');
+      }
     } catch (err) {
-      console.error('Error updating icon:', err);
-      alert('Error updating icon. Please try again.');
+      alert(err);
     }
+  };
+
+  const handleImageUpload = async () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}: `, value);
+        }
+
+        try {
+          await memoApi.uploadImage(memoId, formData);
+          const updatedMemo = await memoApi.getOne(memoId);
+          dispatch(
+            updateMemo({ id: updatedMemo.id, updatedData: updatedMemo })
+          );
+        } catch (err) {
+          alert('Error uploading image. Please try again.');
+        }
+      }
+    });
+    fileInput.click();
   };
 
   return (
@@ -83,7 +116,7 @@ export default function Sidebar() {
     >
       <List
         sx={{
-          width: 250,
+          width: 300,
           height: '100vh',
           backgroundColor: assets.colors.secondary,
         }}
@@ -97,7 +130,7 @@ export default function Sidebar() {
               justifyContent: 'space-between',
             }}
           >
-            <Typography variant="body2" fontWeight="700">
+            <Typography variant="body2" fontWeight="700" paddingLeft="20px">
               {user.username}
             </Typography>
             <IconButton onClick={logout}>
@@ -124,10 +157,11 @@ export default function Sidebar() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              paddingLeft: '20px',
             }}
           >
             <Typography variant="body2" fontWeight="700">
-              プライベート
+              新規ページ
             </Typography>
             <IconButton onClick={addMemo}>
               <AddBoxIcon />
@@ -143,9 +177,28 @@ export default function Sidebar() {
             key={item.id}
             selected={index === activeIndex}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <EmojiPicker icon={item.icon} onChange={onIconChange} />
-              <Typography component="span">{item.title || '無題'}</Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
+              >
+                <DescriptionIcon sx={{ fontSize: '2.0rem' }} />
+                <Typography component="span">{item.title || '無題'}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <IconButton onClick={() => deleteMemoHandler(item.id)}>
+                  <DeleteOutlineIcon />
+                </IconButton>
+                <IconButton onClick={handleImageUpload}>
+                  <PhotoCameraIcon />
+                </IconButton>
+              </Box>
             </Box>
           </ListItemButton>
         ))}

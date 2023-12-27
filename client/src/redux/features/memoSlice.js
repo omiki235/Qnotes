@@ -15,13 +15,17 @@ export const memoSlice = createSlice({
     updateMemo: (state, action) => {
       const { id, updatedData } = action.payload;
       const memoToUpdate = state.value.find((memo) => memo.id === id);
-
       if (memoToUpdate) {
         Object.assign(memoToUpdate, updatedData);
       }
     },
+    deleteMemo: (state, action) => {
+      const deletedMemoId = action.payload;
+      state.value = state.value.filter((memo) => memo.id !== deletedMemoId);
+    },
   },
 });
 
-export const { setMemo, createMemo, updateMemo } = memoSlice.actions;
+export const { setMemo, createMemo, updateMemo, deleteMemo } =
+  memoSlice.actions;
 export default memoSlice.reducer;
