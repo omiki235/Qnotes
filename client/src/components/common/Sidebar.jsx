@@ -86,9 +86,14 @@ export default function Sidebar() {
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}: `, value);
+        }
+
         try {
-          const formData = new FormData();
-          formData.append('image', file);
           await memoApi.uploadImage(memoId, formData);
           const updatedMemo = await memoApi.getOne(memoId);
           dispatch(

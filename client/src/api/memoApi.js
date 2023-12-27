@@ -7,7 +7,11 @@ const memoApi = {
   update: (id, params) => axiosClient.put(`memo/${id}`, params),
   delete: (id) => axiosClient.delete(`memo/${id}`),
   uploadImage: (id, formData) =>
-    axiosClient.post(`memo/${id}/upload-image`, formData),
+    axiosClient.post(`memo/${id}/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
 };
 
 export default memoApi;

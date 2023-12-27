@@ -19,7 +19,6 @@ CREATE TABLE memos (
     title VARCHAR(255) DEFAULT '',
     description TEXT,
     position INT,
-    emoji_data TEXT,
     image_data LONGBLOB,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

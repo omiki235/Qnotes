@@ -7,9 +7,10 @@ const axiosClient = axios.create({
   baseURL: BASE_URL,
 });
 
-// APIを叩く前の前処理
 axiosClient.interceptors.request.use(async (config) => {
-  config.headers['Content-Type'] = 'application/json';
+  if (!config.headers['Content-Type']) {
+    config.headers['Content-Type'] = 'application/json';
+  }
   config.headers['authorization'] = `Bearer ${getToken()}`;
   return config;
 });
