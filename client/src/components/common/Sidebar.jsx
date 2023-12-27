@@ -14,18 +14,18 @@ import {
   setMemo,
   deleteMemo,
 } from '../../redux/features/memoSlice';
+import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import memoApi from '../../api/memoApi';
-import EmojiPicker from '../common/EmojiPicker';
 
 export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState(0);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [setIcon] = useState('');
   const user = useSelector((state) => state.user.value);
   const memos = useSelector((state) => state.memo.value);
   const { memoId } = useParams();
@@ -83,23 +83,35 @@ export default function Sidebar() {
     }
   };
 
-  const onIconChange = async (newIcon, memoId) => {
-    try {
-      setIcon(newIcon);
-
-      const updatedMemo = await memoApi.update(memoId, { icon: newIcon });
-      handleMemoUpdate(updatedMemo);
-    } catch (err) {
-      alert('Error updating icon. Please try again.');
-    }
-  };
-
   const handleMemoUpdate = (updatedMemo) => {
     dispatch(
       setMemo(
         memos.map((memo) => (memo.id === updatedMemo.id ? updatedMemo : memo))
       )
     );
+  };
+
+  const handleImageUpload = async () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      console.log('Selected file:', file);
+      if (file) {
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          console.log('Form Data with File:', formData);
+          await memoApi.uploadImage(memoId, formData);
+          const updatedMemo = await memoApi.getOne(memoId);
+          handleMemoUpdate(updatedMemo);
+        } catch (err) {
+          alert('Error uploading image. Please try again.');
+        }
+      }
+    });
+    fileInput.click();
   };
 
   return (
@@ -172,12 +184,28 @@ export default function Sidebar() {
             key={item.id}
             selected={index === activeIndex}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <EmojiPicker icon={item.icon} onChange={onIconChange} />
-              <Typography component="span">{item.title || '無題'}</Typography>
-              <IconButton onClick={() => deleteMemoHandler(item.id)}>
-                <DeleteOutlineIcon />
-              </IconButton>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}
+              >
+                <DescriptionIcon sx={{ fontSize: '2.0rem' }} />
+                <Typography component="span">{item.title || '無題'}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <IconButton onClick={() => deleteMemoHandler(item.id)}>
+                  <DeleteOutlineIcon />
+                </IconButton>
+                <IconButton onClick={handleImageUpload}>
+                  <PhotoCameraIcon />
+                </IconButton>
+              </Box>
             </Box>
           </ListItemButton>
         ))}

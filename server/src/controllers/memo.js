@@ -125,3 +125,28 @@ exports.delete = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+exports.uploadImage = async (req, res) => {
+  try {
+    console.log('File:', req.file); // ファイル情報をログに出力
+    const memoId = req.params.memoId;
+
+    if (!req.file) {
+      console.log('No file uploaded'); // ファイルがアップロードされなかった場合のログ
+      return res.status(400).send('No file uploaded');
+    }
+
+    const image = req.file.buffer;
+
+    // 画像のバイナリデータをデータベースに保存する例（MySQLの場合）
+    await pool.query('UPDATE memos SET image_data = ? WHERE id = ?', [
+      image,
+      memoId,
+    ]);
+
+    res.status(200).send('Image uploaded successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+};

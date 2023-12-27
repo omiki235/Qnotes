@@ -9,13 +9,15 @@ const axiosClient = axios.create({
 
 // APIを叩く前の前処理
 axiosClient.interceptors.request.use(async (config) => {
-  return {
-    ...config,
-    headers: {
-      'Content-Type': 'application/json',
-      authorization: `Bearer ${getToken()}`,
-    },
-  };
+  if (config.headers['Content-Type'] === 'multipart/form-data') {
+    // ファイルをアップロードする場合は、Content-Type を手動で設定
+    config.headers['Content-Type'] = 'multipart/form-data';
+  } else {
+    // 通常の JSON リクエストの場合は、通常の設定を行う
+    config.headers['Content-Type'] = 'application/json';
+    config.headers['authorization'] = `Bearer ${getToken()}`;
+  }
+  return config;
 });
 
 axiosClient.interceptors.response.use(
