@@ -19,7 +19,10 @@ export default function Memo() {
         const res = await memoApi.getOne(memoId);
         setTitle(res.title);
         setDescription(res.description);
-        setSelectedImage(res.image);
+        const newImageUrl = res.imagePath
+          ? `http://localhost:8000/${res.imagePath}`
+          : null;
+        setSelectedImage(newImageUrl);
       } catch (err) {
         alert(err);
       }
@@ -30,12 +33,20 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateMemoInApi = async (updates) => {
+  const updateMemoInApi = async (newTitle, newDescription) => {
     clearTimeout(timer);
     try {
-      await memoApi.update(memoId, updates);
-      const updatedMemo = await memoApi.getOne(memoId);
-      handleMemoUpdate(updatedMemo);
+      await memoApi.update(memoId, {
+        title: newTitle,
+        description: newDescription,
+      });
+      dispatch(
+        updateMemo({
+          id: memoId,
+          updatedData: { title: newTitle, description: newDescription },
+        })
+      );
+      setSelectedImage((currentImage) => currentImage);
     } catch (err) {
       alert(err);
     }
@@ -46,7 +57,7 @@ export default function Memo() {
     setTitle(newTitle);
 
     timer = setTimeout(() => {
-      updateMemoInApi({ title: newTitle, description });
+      updateMemoInApi(newTitle, description);
     }, timeout);
   };
 
@@ -55,14 +66,11 @@ export default function Memo() {
     setDescription(newDescription);
 
     timer = setTimeout(() => {
-      updateMemoInApi({ title, description: newDescription });
+      updateMemoInApi(title, newDescription);
     }, timeout);
   };
 
-  const handleMemoUpdate = (updatedMemo) => {
-    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
-    setSelectedImage(updatedMemo.image);
-  };
+  console.log(selectedImage);
 
   return (
     <>
@@ -95,15 +103,7 @@ export default function Memo() {
               '.MuiOutlinedInput-root': { fontSize: '1.2rem' },
             }}
           ></TextField>
-          <div>
-            {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Selected"
-                style={{ maxWidth: '100%', marginTop: '10px' }}
-              />
-            )}
-          </div>
+          <div>{selectedImage && <img src={selectedImage} alt="Memo" />}</div>
         </Box>
       </Box>
     </>

@@ -1,6 +1,5 @@
 const pool = require('../config/db.config');
 require('dotenv').config();
-const path = require('path');
 
 exports.create = async (req, res) => {
   try {
@@ -54,23 +53,21 @@ exports.getAll = async (req, res) => {
 exports.getOne = async (req, res) => {
   const { memoId } = req.params;
   try {
-    // ユーザーのメモを取得
     const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? AND id = ?',
       [req.user.id, memoId]
     );
-
     if (rows.length === 0) {
       return res.status(400).json('メモが見つかりません');
     }
     const memo = rows[0];
-    if (memo.image_data) {
-      memo.image_data = memo.image_data.toString('base64');
+    if (memo.image_filename) {
+      memo.imagePath = `uploads/${memo.image_filename}`;
     }
     res.status(200).json(memo);
   } catch (err) {
     console.error(err);
-    res.status(500).json(err);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -134,16 +131,14 @@ exports.uploadImage = async (req, res) => {
     if (!file) {
       return res.status(400).send('No file uploaded');
     }
-    const imagePath = path.join('uploads', file.filename);
 
-    await pool.query('UPDATE memos SET image_data = ? WHERE id = ?', [
-      imagePath,
+    const filename = file.filename;
+    await pool.query('UPDATE memos SET image_filename = ? WHERE id = ?', [
+      filename,
       memoId,
     ]);
 
-    res
-      .status(200)
-      .json({ message: 'Image uploaded successfully', path: imagePath });
+    res.status(200).json({ message: 'Image uploaded successfully', filename });
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
