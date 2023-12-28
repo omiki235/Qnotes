@@ -23,6 +23,7 @@ import memoApi from '../../api/memoApi';
 
 export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeMemoId, setActiveMemoId] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.value);
@@ -47,9 +48,9 @@ export default function Sidebar() {
   }, [dispatch]);
 
   useEffect(() => {
-    const activeIndex = memos.findIndex((e) => e.id === memoId);
+    const activeIndex = memos.findIndex((memo) => memo.id === memoId);
     setActiveIndex(activeIndex);
-  }, [memoId, memos]);
+  }, [memos, memoId]);
 
   const addMemo = async () => {
     try {
@@ -62,6 +63,10 @@ export default function Sidebar() {
   };
 
   const deleteMemoHandler = async (deletedMemoId) => {
+    const confirmDelete = window.confirm('本当に削除しますか？');
+    if (!confirmDelete) {
+      return;
+    }
     try {
       await memoApi.delete(deletedMemoId);
       dispatch(deleteMemo(deletedMemoId));
@@ -145,6 +150,7 @@ export default function Sidebar() {
             to={`/memo/${item.id}`}
             key={item.id}
             selected={index === activeIndex}
+            onClick={() => setActiveMemoId(item.id)}
           >
             <Box
               sx={{
@@ -161,7 +167,10 @@ export default function Sidebar() {
                 <Typography component="span">{item.title || '無題'}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton onClick={() => deleteMemoHandler(item.id)}>
+                <IconButton
+                  onClick={() => deleteMemoHandler(item.id)}
+                  disabled={activeMemoId !== item.id}
+                >
                   <DeleteOutlineIcon />
                 </IconButton>
               </Box>
