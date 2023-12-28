@@ -85,7 +85,6 @@ exports.update = async (req, res) => {
       return res.status(404).json('メモが見つかりません');
     }
 
-    // メモの内容が変更されていない場合
     if (memo.title === title && memo.description === description) {
       return res.status(200).json(memo);
     }

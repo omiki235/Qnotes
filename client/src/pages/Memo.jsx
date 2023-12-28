@@ -97,13 +97,29 @@ export default function Memo() {
             placeholder="ご自由にご記入ください"
             variant="outlined"
             fullWidth
+            multiline
             sx={{
-              '.MuiOutlinedInput-input': { padding: 0 },
-              '.MuiOutlinedInput-notchedOutline': { border: 'none' },
-              '.MuiOutlinedInput-root': { fontSize: '1.2rem' },
+              '.MuiOutlinedInput-input': {
+                padding: 0,
+                whiteSpace: 'pre-wrap',
+              },
+              '.MuiOutlinedInput-notchedOutline': {
+                border: 'none',
+              },
+              '.MuiOutlinedInput-root': {
+                fontSize: '1.2rem',
+              },
             }}
           ></TextField>
-          <div>{selectedImage && <img src={selectedImage} alt="Memo" />}</div>
+          <Box sx={{ margin: '100px 50px' }}>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Memo"
+                style={{ maxWidth: '500px', maxHeight: '300px' }}
+              />
+            )}
+          </Box>
         </Box>
       </Box>
     </>
