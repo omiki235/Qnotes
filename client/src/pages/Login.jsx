@@ -44,9 +44,7 @@ export default function Login() {
       console.log('ログインに成功しました');
       navigate('/');
     } catch (err) {
-      console.log(err);
       const errors = err.data.errors;
-      console.log(errors);
       errors.forEach((err) => {
         if (err.param === 'username') {
           setUsernameErrorText(err.msg);

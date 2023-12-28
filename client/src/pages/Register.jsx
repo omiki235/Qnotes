@@ -60,9 +60,7 @@ export default function Register() {
       console.log('新規登録に成功しました');
       navigate('/');
     } catch (err) {
-      console.log(err);
       const errors = err.data.errors;
-      console.log(errors);
       errors.forEach((err) => {
         if (err.param === 'username') {
           setUsernameErrorText(err.msg);

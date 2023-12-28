@@ -13,11 +13,9 @@ import {
   createMemo,
   setMemo,
   deleteMemo,
-  updateMemo,
 } from '../../redux/features/memoSlice';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -76,35 +74,6 @@ export default function Sidebar() {
     } catch (err) {
       alert(err);
     }
-  };
-
-  const handleImageUpload = async () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}: `, value);
-        }
-
-        try {
-          await memoApi.uploadImage(memoId, formData);
-          const updatedMemo = await memoApi.getOne(memoId);
-          dispatch(
-            updateMemo({ id: updatedMemo.id, updatedData: updatedMemo })
-          );
-        } catch (err) {
-          alert('Error uploading image. Please try again.');
-        }
-      }
-    });
-    fileInput.click();
   };
 
   return (
@@ -194,9 +163,6 @@ export default function Sidebar() {
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <IconButton onClick={() => deleteMemoHandler(item.id)}>
                   <DeleteOutlineIcon />
-                </IconButton>
-                <IconButton onClick={handleImageUpload}>
-                  <PhotoCameraIcon />
                 </IconButton>
               </Box>
             </Box>

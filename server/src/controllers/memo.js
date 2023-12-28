@@ -126,17 +126,14 @@ exports.uploadImage = async (req, res) => {
   try {
     const memoId = req.params.memoId;
     const file = req.file;
-
     if (!file) {
       return res.status(400).send('No file uploaded');
     }
-
     const filename = file.filename;
     await pool.query('UPDATE memos SET image_filename = ? WHERE id = ?', [
       filename,
       memoId,
     ]);
-
     res.status(200).json({ message: 'Image uploaded successfully', filename });
   } catch (error) {
     console.error(error);

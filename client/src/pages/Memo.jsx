@@ -70,11 +70,33 @@ export default function Memo() {
     }, timeout);
   };
 
-  console.log(selectedImage);
+  const handleImageUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await memoApi.uploadImage(memoId, formData);
+      if (response.filename) {
+        // アップロード後、新しい画像のURLを設定
+        const newImageUrl = `http://localhost:8000/uploads/${response.filename}`;
+        setSelectedImage(newImageUrl);
+      }
+    } catch (err) {
+      alert('画像のアップロードに失敗しました。');
+    }
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
 
   return (
     <>
       <Box sx={{ padding: '100px 150px' }}>
+        <input type="file" onChange={handleFileChange} />
         <Box>
           <TextField
             onChange={updateTitle}
