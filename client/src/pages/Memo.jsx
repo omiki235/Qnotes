@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/system';
-import { TextField, Button } from '@mui/material';
+import { TextField, Button, Input } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { updateMemo } from '../redux/features/memoSlice';
@@ -100,7 +100,7 @@ export default function Memo() {
   return (
     <>
       <Box sx={{ padding: '100px 150px' }}>
-        <input
+        <Input
           type="file"
           id="hiddenFileInput"
           style={{ display: 'none' }}
