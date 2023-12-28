@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/system';
-import { TextField } from '@mui/material';
+import { TextField, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { updateMemo } from '../redux/features/memoSlice';
@@ -77,7 +77,6 @@ export default function Memo() {
     try {
       const response = await memoApi.uploadImage(memoId, formData);
       if (response.filename) {
-        // アップロード後、新しい画像のURLを設定
         const newImageUrl = `http://localhost:8000/uploads/${response.filename}`;
         setSelectedImage(newImageUrl);
       }
@@ -90,14 +89,31 @@ export default function Memo() {
     const file = event.target.files[0];
     if (file) {
       handleImageUpload(file);
+      event.target.value = null;
     }
+  };
+
+  const handleImageUploadClick = () => {
+    document.getElementById('hiddenFileInput').click();
   };
 
   return (
     <>
       <Box sx={{ padding: '100px 150px' }}>
-        <input type="file" onChange={handleFileChange} />
-        <Box>
+        <input
+          type="file"
+          id="hiddenFileInput"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleImageUploadClick}
+        >
+          画像をアップロード
+        </Button>
+        <Box sx={{ margin: '50px' }}>
           <TextField
             onChange={updateTitle}
             value={title !== null ? title : ''}
