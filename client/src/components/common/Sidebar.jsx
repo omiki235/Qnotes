@@ -48,9 +48,9 @@ export default function Sidebar() {
   }, [dispatch]);
 
   useEffect(() => {
-    const activeIndex = memos.findIndex((memo) => memo.id === memoId);
+    const activeIndex = memos.findIndex((e) => e.id === memoId);
     setActiveIndex(activeIndex);
-  }, [memos, memoId]);
+  }, [memoId, memos, navigate]);
 
   const addMemo = async () => {
     try {

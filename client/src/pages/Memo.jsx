@@ -85,11 +85,11 @@ export default function Memo() {
     }
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
     if (file) {
       handleImageUpload(file);
-      event.target.value = null;
+      e.target.value = null;
     }
   };
 
@@ -128,27 +128,17 @@ export default function Memo() {
                 fontWeight: '700',
               },
             }}
-          ></TextField>
-          <TextField
+          />
+          <textarea
             onChange={updateDescription}
-            value={description !== null ? description : ''}
+            value={description || ''}
             placeholder="ご自由にご記入ください"
-            variant="outlined"
-            fullWidth
-            multiline
-            sx={{
-              '.MuiOutlinedInput-input': {
-                padding: 0,
-                whiteSpace: 'pre-wrap',
-              },
-              '.MuiOutlinedInput-notchedOutline': {
-                border: 'none',
-              },
-              '.MuiOutlinedInput-root': {
-                fontSize: '1.2rem',
-              },
+            style={{
+              width: '100%',
+              fontSize: '1.2rem',
+              padding: '10px',
             }}
-          ></TextField>
+          />
           <Box sx={{ margin: '100px 50px' }}>
             {selectedImage && (
               <img
