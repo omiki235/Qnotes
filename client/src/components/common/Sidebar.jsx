@@ -13,11 +13,9 @@ import {
   createMemo,
   setMemo,
   deleteMemo,
-  updateMemo,
 } from '../../redux/features/memoSlice';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import LogoutIcon from '@mui/icons-material/Logout';
 import assets from '../../assets/index';
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -25,6 +23,7 @@ import memoApi from '../../api/memoApi';
 
 export default function Sidebar() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [activeMemoId, setActiveMemoId] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.value);
@@ -64,6 +63,10 @@ export default function Sidebar() {
   };
 
   const deleteMemoHandler = async (deletedMemoId) => {
+    const confirmDelete = window.confirm('本当に削除しますか？');
+    if (!confirmDelete) {
+      return;
+    }
     try {
       await memoApi.delete(deletedMemoId);
       dispatch(deleteMemo(deletedMemoId));
@@ -76,35 +79,6 @@ export default function Sidebar() {
     } catch (err) {
       alert(err);
     }
-  };
-
-  const handleImageUpload = async () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}: `, value);
-        }
-
-        try {
-          await memoApi.uploadImage(memoId, formData);
-          const updatedMemo = await memoApi.getOne(memoId);
-          dispatch(
-            updateMemo({ id: updatedMemo.id, updatedData: updatedMemo })
-          );
-        } catch (err) {
-          alert('Error uploading image. Please try again.');
-        }
-      }
-    });
-    fileInput.click();
   };
 
   return (
@@ -176,6 +150,7 @@ export default function Sidebar() {
             to={`/memo/${item.id}`}
             key={item.id}
             selected={index === activeIndex}
+            onClick={() => setActiveMemoId(item.id)}
           >
             <Box
               sx={{
@@ -192,11 +167,11 @@ export default function Sidebar() {
                 <Typography component="span">{item.title || '無題'}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <IconButton onClick={() => deleteMemoHandler(item.id)}>
+                <IconButton
+                  onClick={() => deleteMemoHandler(item.id)}
+                  disabled={activeMemoId !== item.id}
+                >
                   <DeleteOutlineIcon />
-                </IconButton>
-                <IconButton onClick={handleImageUpload}>
-                  <PhotoCameraIcon />
                 </IconButton>
               </Box>
             </Box>

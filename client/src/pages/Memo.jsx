@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@mui/system';
-import { TextField } from '@mui/material';
+import { TextField, Button, Input } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { updateMemo } from '../redux/features/memoSlice';
@@ -33,19 +33,12 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateMemoInApi = async (newTitle, newDescription) => {
+  const updateMemoInApi = async (updates) => {
     clearTimeout(timer);
     try {
-      await memoApi.update(memoId, {
-        title: newTitle,
-        description: newDescription,
-      });
-      dispatch(
-        updateMemo({
-          id: memoId,
-          updatedData: { title: newTitle, description: newDescription },
-        })
-      );
+      await memoApi.update(memoId, updates);
+      const updatedMemo = await memoApi.getOne(memoId);
+      handleMemoUpdate(updatedMemo);
       setSelectedImage((currentImage) => currentImage);
     } catch (err) {
       alert(err);
@@ -57,7 +50,7 @@ export default function Memo() {
     setTitle(newTitle);
 
     timer = setTimeout(() => {
-      updateMemoInApi(newTitle, description);
+      updateMemoInApi({ title: newTitle, description });
     }, timeout);
   };
 
@@ -66,16 +59,58 @@ export default function Memo() {
     setDescription(newDescription);
 
     timer = setTimeout(() => {
-      updateMemoInApi(title, newDescription);
+      updateMemoInApi({ title, description: newDescription });
     }, timeout);
   };
 
-  console.log(selectedImage);
+  const handleImageUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await memoApi.uploadImage(memoId, formData);
+      if (response.filename) {
+        const newImageUrl = `http://localhost:8000/uploads/${response.filename}`;
+        setSelectedImage(newImageUrl);
+      }
+    } catch (err) {
+      alert('画像のアップロードに失敗しました。');
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleImageUpload(file);
+      e.target.value = null;
+    }
+  };
+
+  const handleImageUploadClick = () => {
+    document.getElementById('hiddenFileInput').click();
+  };
+
+  const handleMemoUpdate = (updatedMemo) => {
+    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
+  };
 
   return (
     <>
       <Box sx={{ padding: '100px 150px' }}>
-        <Box>
+        <Input
+          type="file"
+          id="hiddenFileInput"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleImageUploadClick}
+        >
+          画像をアップロード
+        </Button>
+        <Box sx={{ margin: '50px' }}>
           <TextField
             onChange={updateTitle}
             value={title !== null ? title : ''}
@@ -90,20 +125,26 @@ export default function Memo() {
                 fontWeight: '700',
               },
             }}
-          ></TextField>
-          <TextField
+          />
+          <textarea
             onChange={updateDescription}
-            value={description !== null ? description : ''}
+            value={description || ''}
             placeholder="ご自由にご記入ください"
-            variant="outlined"
-            fullWidth
-            sx={{
-              '.MuiOutlinedInput-input': { padding: 0 },
-              '.MuiOutlinedInput-notchedOutline': { border: 'none' },
-              '.MuiOutlinedInput-root': { fontSize: '1.2rem' },
+            style={{
+              width: '100%',
+              fontSize: '1.2rem',
+              padding: '10px',
             }}
-          ></TextField>
-          <div>{selectedImage && <img src={selectedImage} alt="Memo" />}</div>
+          />
+          <Box sx={{ margin: '100px 50px' }}>
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Memo"
+                style={{ maxWidth: '500px', maxHeight: '300px' }}
+              />
+            )}
+          </Box>
         </Box>
       </Box>
     </>
