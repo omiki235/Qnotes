@@ -3,7 +3,7 @@ require('dotenv').config();
 
 exports.create = async (req, res) => {
   try {
-    const userId = req.user.id || DEFAULT_USER_ID;
+    const userId = req.user.id;
 
     const [rows] = await pool.query('SELECT COUNT(*) as count FROM memos');
     const memoCount = rows[0].count;
@@ -28,7 +28,7 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const userId = req.user.id || DEFAULT_USER_ID;
+    const userId = req.user.id;
 
     const [rows] = await pool.query(
       'SELECT * FROM memos WHERE user_id = ? ORDER BY position DESC',
@@ -42,10 +42,8 @@ exports.getAll = async (req, res) => {
       title: row.title,
       icon: row.icon,
     }));
-
     res.status(200).json(memos);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
@@ -75,35 +73,21 @@ exports.update = async (req, res) => {
   const { memoId } = req.params;
   const { title, description } = req.body;
 
-  try {
-    const [memo] = await pool.query(
-      'SELECT * FROM memos WHERE user_id = ? AND id = ?',
-      [req.user.id, memoId]
-    );
+  await pool.query('UPDATE memos SET title = ?, description = ? WHERE id = ?', [
+    title,
+    description,
+    memoId,
+  ]);
 
-    if (!memo || memo.length === 0) {
-      return res.status(404).json('メモが見つかりません');
-    }
+  const [updatedRows] = await pool.query('SELECT * FROM memos WHERE id = ?', [
+    memoId,
+  ]);
 
-    if (memo.title === title && memo.description === description) {
-      return res.status(200).json(memo);
-    }
-
-    await pool.query(
-      'UPDATE memos SET title = ?, description = ? WHERE id = ?',
-      [title, description, memoId]
-    );
-
-    const updatedMemo = {
-      id: memoId,
-      title,
-      description,
-    };
-
+  if (updatedRows.length > 0) {
+    const updatedMemo = updatedRows[0];
     res.status(200).json(updatedMemo);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+  } else {
+    res.status(404).json({ error: 'Memo not found after update' });
   }
 };
 
