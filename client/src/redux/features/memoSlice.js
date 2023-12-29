@@ -14,9 +14,9 @@ export const memoSlice = createSlice({
     },
     updateMemo: (state, action) => {
       const { id, updatedData } = action.payload;
-      const index = state.value.findIndex((memo) => memo.id === id);
-      if (index !== -1) {
-        state.value[index] = { ...state.value[index], ...updatedData };
+      const memoToUpdate = state.value.find((memo) => memo.id === id);
+      if (memoToUpdate) {
+        Object.assign(memoToUpdate, updatedData);
       }
     },
     deleteMemo: (state, action) => {

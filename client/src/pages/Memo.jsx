@@ -33,19 +33,12 @@ export default function Memo() {
   let timer;
   const timeout = 500;
 
-  const updateMemoInApi = async (newTitle, newDescription) => {
+  const updateMemoInApi = async (updates) => {
     clearTimeout(timer);
     try {
-      await memoApi.update(memoId, {
-        title: newTitle,
-        description: newDescription,
-      });
-      dispatch(
-        updateMemo({
-          id: memoId,
-          updatedData: { title: newTitle, description: newDescription },
-        })
-      );
+      await memoApi.update(memoId, updates);
+      const updatedMemo = await memoApi.getOne(memoId);
+      handleMemoUpdate(updatedMemo);
       setSelectedImage((currentImage) => currentImage);
     } catch (err) {
       alert(err);
@@ -57,7 +50,7 @@ export default function Memo() {
     setTitle(newTitle);
 
     timer = setTimeout(() => {
-      updateMemoInApi(newTitle, description);
+      updateMemoInApi({ title: newTitle, description });
     }, timeout);
   };
 
@@ -66,7 +59,7 @@ export default function Memo() {
     setDescription(newDescription);
 
     timer = setTimeout(() => {
-      updateMemoInApi(title, newDescription);
+      updateMemoInApi({ title, description: newDescription });
     }, timeout);
   };
 
@@ -95,6 +88,10 @@ export default function Memo() {
 
   const handleImageUploadClick = () => {
     document.getElementById('hiddenFileInput').click();
+  };
+
+  const handleMemoUpdate = (updatedMemo) => {
+    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
   };
 
   return (
