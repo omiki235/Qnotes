@@ -46,12 +46,10 @@ CREATE TABLE users (
 CREATE TABLE memos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    icon VARCHAR(255) DEFAULT '📝',
-    title VARCHAR(255) DEFAULT '無題',
+    title VARCHAR(255) DEFAULT '',
     description TEXT,
     position INT,
-    favorite BOOLEAN DEFAULT false,
-    favoritePosition INT DEFAULT 0,
+    image_filename VARCHAR(255),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ```
