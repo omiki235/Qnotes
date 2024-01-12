@@ -1,9 +1,9 @@
-DROP DATABASE IF EXISTS nortion_data;
+DROP DATABASE IF EXISTS Qnotes_data;
 
 -- データベースの作成
-CREATE DATABASE nortion_data;
+CREATE DATABASE Qnotes_data;
 -- データベースの切り替え
-use nortion_data;
+use Qnotes_data;
 
 -- usersテーブルの作成
 CREATE TABLE users (
