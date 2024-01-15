@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://3.114.228.146/api';
+const BASE_URL = 'http://3.112.129.215/api';
 const getToken = () => localStorage.getItem('token');
 
 const axiosClient = axios.create({
