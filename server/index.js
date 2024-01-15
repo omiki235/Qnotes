@@ -13,6 +13,7 @@ const corsOptions = {
     'https://3.114.228.146',
   ],
   optionsSuccessStatus: 200,
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
