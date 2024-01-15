@@ -20,7 +20,7 @@ export default function Memo() {
         setTitle(res.title);
         setDescription(res.description);
         const newImageUrl = res.imagePath
-          ? `http://localhost:8000/${res.imagePath}`
+          ? `http://3.114.228.146:8000/${res.imagePath}`
           : null;
         setSelectedImage(newImageUrl);
       } catch (err) {
