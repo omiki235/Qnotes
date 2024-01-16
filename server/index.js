@@ -9,8 +9,8 @@ require('dotenv').config();
 const corsOptions = {
   origin: [
     'http://localhost:3000',
-    'http://3.112.129.215',
-    'https://3.112.129.215',
+    'http://3.114.228.146',
+    'https://3.114.228.146',
   ],
   optionsSuccessStatus: 200,
   credentials: true,
