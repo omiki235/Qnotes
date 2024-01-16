@@ -30,7 +30,7 @@ export default function AuthLayout() {
             flexDirection: 'column',
           }}
         >
-          <h1>Qnotes2</h1>
+          <h1>Qnotes</h1>
         </Box>
         <Outlet />
       </Container>
