@@ -7,11 +7,9 @@ const pool = require('./src/config/db.config');
 require('dotenv').config();
 
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://3.114.228.146',
-    'https://3.114.228.146',
-  ],
+  cors: {
+    origin: '*',
+  },
   optionsSuccessStatus: 200,
   credentials: true,
 };
