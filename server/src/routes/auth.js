@@ -9,7 +9,7 @@ require('dotenv').config();
 
 // ユーザー新規登録
 router.post(
-  '/',
+  '/register',
   body('username')
     .isLength({ min: 5 })
     .withMessage('ユーザー名は5文字以上必要です。')
@@ -48,7 +48,7 @@ router.post(
 
 // ログイン用 API認証
 router.post(
-  '/',
+  '/login',
   body('username')
     .isLength({ min: 5 })
     .withMessage('ユーザー名は5文字以上必要です'),

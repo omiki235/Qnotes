@@ -18,8 +18,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-app.use('/api/auth', require('./src/routes/auth'));
-app.use('/api/memo', require('./src/routes/memo'));
+app.use('/api', require('./src/routes'));
 
 app.listen(PORT, () => {
   console.log(`${PORT}番のサーバーが起動しました`);
