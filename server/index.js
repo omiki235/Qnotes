@@ -1,45 +1,40 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 const pool = require('./src/config/db.config');
 
-// 環境変数を読み込む
 require('dotenv').config();
 
-// CORS設定の詳細
 const corsOptions = {
-  allowedHeaders: ['sessionId', 'Content-Type'],
-  exposedHeaders: ['sessionId'],
   origin: '*',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  preflightContinue: false,
+  optionsSuccessStatus: 200,
+  credentials: true,
 };
 
-// CORSミドルウェアを適用
 app.use(cors(corsOptions));
-
-// JSONボディパーサーを適用
 app.use(express.json());
-
-// APIのルートを設定
 app.use('/api', require('./src/routes'));
 
-// アップロードされたファイルを提供するためのルートを設定
-app.use('/uploads', express.static('./src/uploads'));
+app.use(express.static(path.join(__dirname, 'client/build')));
 
-// サーバーを起動
-app.listen(PORT, () => {
-  console.log(`${PORT}番のサーバーが起動しました`);
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
-// データベース接続を確認
+app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
+
+app.listen(PORT, () => {
+  console.log(`サーバーが${PORT}番ポートで起動しました。`);
+});
+
 pool
   .getConnection()
   .then((connection) => {
-    console.log('データベースに接続しました');
+    console.log('データベースに接続しました。');
     connection.release();
   })
   .catch((err) => {
-    console.error('データベースに接続できませんでした', err);
+    console.error('データベースに接続できませんでした。', err);
   });
