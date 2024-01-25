@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 const PORT = 8000;
 const pool = require('./src/config/db.config');
@@ -19,7 +20,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api', require('./src/routes'));
-
+app.use('*', express.static(path.join(__dirname, 'build')));
 app.listen(PORT, () => {
   console.log(`${PORT}番のサーバーが起動しました`);
 });
