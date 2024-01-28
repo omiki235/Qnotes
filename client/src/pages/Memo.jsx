@@ -70,7 +70,7 @@ export default function Memo() {
     try {
       const response = await memoApi.uploadImage(memoId, formData);
       if (response.filename) {
-        const newImageUrl = `http://localhost:8000/uploads/${response.filename}`;
+        const newImageUrl = `http://3.114.228.146/uploads/${response.filename}`;
         setSelectedImage(newImageUrl);
       }
     } catch (err) {
