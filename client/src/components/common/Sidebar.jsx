@@ -41,7 +41,7 @@ export default function Sidebar() {
         const res = await memoApi.getAll();
         dispatch(setMemo(res));
       } catch (err) {
-        alert(err);
+        console.log(err);
       }
     };
     getMemos();
@@ -58,7 +58,7 @@ export default function Sidebar() {
       dispatch(createMemo(res));
       navigate(`/memo/${res.id}`);
     } catch (err) {
-      alert(err);
+      console.log(err);
     }
   };
 
@@ -77,7 +77,7 @@ export default function Sidebar() {
         navigate('/memo');
       }
     } catch (err) {
-      alert(err);
+      console.log(err);
     }
   };
 

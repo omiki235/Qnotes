@@ -24,7 +24,7 @@ export default function Memo() {
           : null;
         setSelectedImage(newImageUrl);
       } catch (err) {
-        alert(err);
+        console.log(err);
       }
     };
     getMemo();
@@ -41,7 +41,7 @@ export default function Memo() {
       handleMemoUpdate(updatedMemo);
       setSelectedImage((currentImage) => currentImage);
     } catch (err) {
-      alert(err);
+      console.log(err);
     }
   };
 
