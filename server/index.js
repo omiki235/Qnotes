@@ -16,14 +16,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/api', require('./src/routes'));
+app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
 
 app.use(express.static(path.join(__dirname, '../client/build')));
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
-
-app.use('/uploads', express.static(path.join(__dirname, 'src/uploads')));
 
 app.listen(PORT, () => {
   console.log(`サーバーが${PORT}番ポートで起動しました。`);
