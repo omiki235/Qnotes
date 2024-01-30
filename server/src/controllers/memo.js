@@ -135,9 +135,7 @@ exports.uploadImage = async (req, res) => {
 
     s3.upload(uploadParams, function (err, data) {
       if (err) {
-        return res
-          .status(500)
-          .send('S3 へのアップロードでエラーが発生しました');
+        return res.status(500).send('S3へのアップロードでエラーが発生しました');
       }
       res.status(200).json({
         message: '画像が正常にアップロードされました',

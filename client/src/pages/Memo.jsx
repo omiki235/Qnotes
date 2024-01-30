@@ -78,7 +78,7 @@ export default function Memo() {
     try {
       const response = await memoApi.uploadImage(memoId, formData);
       setSelectedImage(response.data.url);
-      alert('Fファイルが正常にアップロードされました');
+      alert('ファイルが正常にアップロードされました');
     } catch (error) {
       alert('ファイルのアップロード中にエラーが発生しました');
     }
