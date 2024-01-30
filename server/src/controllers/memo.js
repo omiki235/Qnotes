@@ -1,6 +1,16 @@
 const pool = require('../config/db.config');
 require('dotenv').config();
 
+const AWS = require('aws-sdk');
+
+AWS.config.update({
+  region: process.env.REGION,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
+const s3 = new AWS.S3();
+
 exports.create = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -110,17 +120,32 @@ exports.uploadImage = async (req, res) => {
   try {
     const memoId = req.params.memoId;
     const file = req.file;
+
     if (!file) {
-      return res.status(400).send('No file uploaded');
+      return res.status(400).send('ファイルがアップロードされていません');
     }
-    const filename = file.filename;
-    await pool.query('UPDATE memos SET image_filename = ? WHERE id = ?', [
-      filename,
-      memoId,
-    ]);
-    res.status(200).json({ message: 'Image uploaded successfully', filename });
+
+    const uploadParams = {
+      Bucket: process.env.AWS_Bucket_Name,
+      Key: `${memoId}/${file.originalname}`,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read',
+    };
+
+    s3.upload(uploadParams, function (err, data) {
+      if (err) {
+        return res
+          .status(500)
+          .send('S3 へのアップロードでエラーが発生しました');
+      }
+      res.status(200).json({
+        message: '画像が正常にアップロードされました',
+        url: data.Location,
+      });
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send('内部サーバーエラー');
   }
 };
