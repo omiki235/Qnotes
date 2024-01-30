@@ -126,7 +126,7 @@ exports.uploadImage = async (req, res) => {
     }
 
     const uploadParams = {
-      Bucket: process.env.AWS_Bucket_Name,
+      Bucket: process.env.AWS_BUCKET_NAME,
       Key: `${memoId}/${file.originalname}`,
       Body: file.buffer,
       ContentType: file.mimetype,
