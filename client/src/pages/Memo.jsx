@@ -13,16 +13,17 @@ export default function Memo() {
   const [selectedImage, setSelectedImage] = useState(null);
   const dispatch = useDispatch();
 
+  const [selectedFile, setSelectedFile] = useState(null);
+
   useEffect(() => {
     const getMemo = async () => {
       try {
         const res = await memoApi.getOne(memoId);
         setTitle(res.title);
         setDescription(res.description);
-        const newImageUrl = res.imagePath
-          ? `http://3.114.228.146/${res.imagePath}`
-          : null;
-        setSelectedImage(newImageUrl);
+        setSelectedImage(
+          res.imagePath ? `http://3.114.228.146/${res.imagePath}` : null
+        );
       } catch (err) {
         console.log(err);
       }
@@ -62,36 +63,25 @@ export default function Memo() {
       updateMemoInApi({ title, description: newDescription });
     }, timeout);
   };
-
-  const handleImageUpload = async (file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await memoApi.uploadImage(memoId, formData);
-      if (response.filename) {
-        const newImageUrl = `http://3.114.228.146/uploads/${response.filename}`;
-        setSelectedImage(newImageUrl);
-      }
-    } catch (err) {
-      alert('画像のアップロードに失敗しました。');
-    }
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      handleImageUpload(file);
-      e.target.value = null;
-    }
-  };
-
-  const handleImageUploadClick = () => {
-    document.getElementById('hiddenFileInput').click();
-  };
-
   const handleMemoUpdate = (updatedMemo) => {
     dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      alert('アップロードするファイルを選択してください');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+    try {
+      const response = await memoApi.uploadImage(memoId, formData);
+      setSelectedImage(response.data.url);
+      alert('Fファイルが正常にアップロードされました');
+    } catch (error) {
+      alert('ファイルのアップロード中にエラーが発生しました');
+    }
   };
 
   return (
@@ -101,13 +91,9 @@ export default function Memo() {
           type="file"
           id="hiddenFileInput"
           style={{ display: 'none' }}
-          onChange={handleFileChange}
+          onChange={(e) => setSelectedFile(e.target.files[0])}
         />
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={handleImageUploadClick}
-        >
+        <Button variant="contained" color="primary" onClick={handleSubmit}>
           画像をアップロード
         </Button>
         <Box sx={{ margin: '50px' }}>
