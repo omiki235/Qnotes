@@ -13,17 +13,16 @@ export default function Memo() {
   const [selectedImage, setSelectedImage] = useState(null);
   const dispatch = useDispatch();
 
-  const [selectedFile, setSelectedFile] = useState(null);
-
   useEffect(() => {
     const getMemo = async () => {
       try {
         const res = await memoApi.getOne(memoId);
         setTitle(res.title);
         setDescription(res.description);
-        setSelectedImage(
-          res.imagePath ? `http://3.114.228.146/${res.imagePath}` : null
-        );
+        const newImageUrl = res.imagePath
+          ? `http://3.114.228.146/${res.imagePath}`
+          : null;
+        setSelectedImage(newImageUrl);
       } catch (err) {
         console.log(err);
       }
@@ -63,36 +62,36 @@ export default function Memo() {
       updateMemoInApi({ title, description: newDescription });
     }, timeout);
   };
-  const handleMemoUpdate = (updatedMemo) => {
-    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
-  };
 
-  const handleFileSelectClick = () => {
-    const fileInput = document.getElementById('hiddenFileInput');
-    fileInput.click();
-  };
-
-  // ファイルが選択されたときの処理
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedFile) {
-      alert('アップロードするファイルを選択してください');
-      return;
-    }
+  const handleImageUpload = async (file) => {
     const formData = new FormData();
-    formData.append('image', selectedFile);
+    formData.append('image', file);
+
     try {
       const response = await memoApi.uploadImage(memoId, formData);
-      setSelectedImage(response.url);
-      alert('ファイルが正常にアップロードされました');
-    } catch (error) {
-      console.error(error);
-      alert('ファイルのアップロード中にエラーが発生しました');
+      if (response.filename) {
+        const newImageUrl = `http://3.114.228.146/uploads/${response.filename}`;
+        setSelectedImage(newImageUrl);
+      }
+    } catch (err) {
+      alert('画像のアップロードに失敗しました。');
     }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleImageUpload(file);
+      e.target.value = null;
+    }
+  };
+
+  const handleImageUploadClick = () => {
+    document.getElementById('hiddenFileInput').click();
+  };
+
+  const handleMemoUpdate = (updatedMemo) => {
+    dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
   };
 
   return (
@@ -105,17 +104,9 @@ export default function Memo() {
           onChange={handleFileChange}
         />
         <Button
-          variant="contained"
+          variant="outlined"
           color="primary"
-          onClick={handleFileSelectClick}
-        >
-          画像を選択
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleSubmit}
-          disabled={!selectedFile}
+          onClick={handleImageUploadClick}
         >
           画像をアップロード
         </Button>
