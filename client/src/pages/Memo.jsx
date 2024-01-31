@@ -67,6 +67,16 @@ export default function Memo() {
     dispatch(updateMemo({ id: updatedMemo.id, updatedData: updatedMemo }));
   };
 
+  const handleFileSelectClick = () => {
+    const fileInput = document.getElementById('hiddenFileInput');
+    fileInput.click();
+  };
+
+  // ファイルが選択されたときの処理
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedFile) {
@@ -77,9 +87,10 @@ export default function Memo() {
     formData.append('image', selectedFile);
     try {
       const response = await memoApi.uploadImage(memoId, formData);
-      setSelectedImage(response.data.url);
+      setSelectedImage(response.url);
       alert('ファイルが正常にアップロードされました');
     } catch (error) {
+      console.error(error);
       alert('ファイルのアップロード中にエラーが発生しました');
     }
   };
@@ -91,9 +102,21 @@ export default function Memo() {
           type="file"
           id="hiddenFileInput"
           style={{ display: 'none' }}
-          onChange={(e) => setSelectedFile(e.target.files[0])}
+          onChange={handleFileChange}
         />
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleFileSelectClick}
+        >
+          画像を選択
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleSubmit}
+          disabled={!selectedFile}
+        >
           画像をアップロード
         </Button>
         <Box sx={{ margin: '50px' }}>
